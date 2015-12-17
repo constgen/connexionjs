@@ -102,7 +102,6 @@ Emitter.prototype.emit = function (eventType, detail) {
  * @return {Object} Host object
  */
 Emitter.prototype.listen = function(eventType, handler) {
-	return;
 	var listeners,
 		stream,
 		observer,
@@ -131,7 +130,6 @@ Emitter.prototype.listen = function(eventType, handler) {
  * 1
  */
 Emitter.prototype.observe = function(eventType, handler) {
-	return;
 	var listeners,
 		stream,
 		observer,
