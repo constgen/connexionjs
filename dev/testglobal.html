@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title></title>
+	<meta charset='utf-8'>
+</head>
+<body>
+	<script src="../libs/polyfills/polyfills.js"></script>
+	
+
+	<script src="../dist/connexion.js"></script>
+
+
+	<script>
+		if (typeof connexion !== 'undefined') {
+			console.log(connexion)
+		}
+		else {
+			console.log('global connexion is not defined')
+		}
+	</script>
+
+	<script src="../node_modules/systemjs/dist/system.src.js"></script>
+	<script>
+		System.import('../dist/connexion.js').then(function (connexion) {
+			console.info(connexion)
+		});
+	</script>
+
+
+</body>
+</html>

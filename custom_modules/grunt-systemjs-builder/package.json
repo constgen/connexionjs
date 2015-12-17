@@ -1,0 +1,17 @@
+{
+	"name": "gunt-systemjs-builder",
+	"version": "0.0.1",
+	"author": {
+		"name": "Sigma"
+	},
+	"private": true,
+	"dependencies": {
+		"systemjs-builder": "^0.9.1"
+	},
+	"peerDependencies": {
+		"grunt": ">=0.4.0"
+	},
+	"keywords": [
+		"gruntplugin"
+	]
+}

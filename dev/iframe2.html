@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title></title>
+	<meta charset='utf-8'>
+	<script>window.name = 'iframe2'</script>
+</head>
+<body>
+	<script src="../libs/polyfills/polyfills.js"></script>
+	<script src="../node_modules/systemjs/dist/system.src.js"></script>
+	<script src="../system.config.js"></script>
+
+	This is iframe2
+
+	<button data-component="push">Push</button>
+
+
+	<script>
+		System.import('../src/index.js').then(function (connexion) {
+			window.connexion = connexion;
+
+
+			var button = document.querySelector('button');
+			button.onclick = function () {
+				console.log('click in iframe2')
+				connexion.emit('test-action1', { datafromIframe2: 2 })
+			}
+			connexion.emit('test-action0', { datafromIframe2: 2 })
+
+
+			connexion.listen('*', function (d, e) {
+				console.info(e.type, d, document.body) 
+			});
+		});
+	</script>
+
+
+</body>
+</html>

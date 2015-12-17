@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="minimum-scale=1, width=device-width, maximum-scale=1, user-scalable=no, minimal-ui"/>
+    <title>Connexion</title>
+	<script>window.name = 'index'</script>
+</head>
+<body>
+	<script src="../libs/polyfills/polyfills.js"></script>
+	<script src="../node_modules/systemjs/dist/system.src.js" ></script>
+	<script src="../system.config.js"></script>
+
+	<!--<iframe id=iframe src="iframe.html"></iframe>
+	<iframe id=iframe2 src="iframe2.html"></iframe>-->
+
+	<!--<iframe id=iframe src="http://sigma.loc/Casino%20Client/connexionjs/dev/iframe.html"></iframe>
+	<iframe id=iframe22 src="http://sigma.loc/Casino%20Client/connexionjs/dev/iframe2.html"></iframe>-->
+
+	<br />
+
+	<button>Add iframe 3</button>
+
+	<script>
+		System.import('../src/index.js').then(function (connexion) {
+			window.connexion = connexion;
+
+			connexion.emit('index-event', {action: 'index'})
+
+			var button = document.querySelector('button');
+			button.onclick = function () {
+				document.body.insertAdjacentHTML('afterend', '<iframe id=iframe3 src="iframe3.html"></iframe>')
+			}
+
+			connexion.listen('*', function (d, e) {
+				console.info(e.type, d, document.body)
+			});
+
+			//connexion.observe('test-action1', function (d, e) {
+			//	console.warn(e.type, d)
+			//});
+		});
+	</script>
+</body>
+</html>

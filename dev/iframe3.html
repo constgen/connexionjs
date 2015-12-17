@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title></title>
+	<meta charset='utf-8'>
+	<script>window.name = 'iframe2'</script>
+</head>
+<body>
+	<script src="../libs/polyfills/polyfills.js"></script>
+	<script src="../node_modules/systemjs/dist/system.src.js"></script>
+	<script src="../system.config.js"></script>
+
+	This is iframe3
+
+	<button>Push</button>
+	<button>Add iframe 3</button>
+
+
+	<script>
+		System.import('../src/index.js').then(function (connexion) {
+			window.connexion = connexion;
+
+
+			var button = document.querySelector('button');
+			button.onclick = function () {
+				console.log('click in iframe3')
+				connexion.emit('test-action1', { datafromIframe3: 3 })
+			}
+
+			var button2 = document.querySelectorAll('button')[1];
+			button2.onclick = function () {
+				document.body.insertAdjacentHTML('afterend', '<iframe id=iframe3 src="iframe3.html"></iframe>')
+			}
+
+			connexion.emit('test-action0', { datafromIframe3: 3 })
+
+			//channel.onSetupResponse()
+
+			connexion.listen('test-action1', function (d, e) {
+				console.info(e.type, d, document.body) 
+			});
+			connexion.observe('test-action1', function (d, e) {
+				console.warn(e.type, d, document.body)
+			});
+			connexion.listen('index-event', function (d, e) {
+				console.info(e.type, d, document.body)
+			});
+			connexion.listen('installed-list-change', function (d, e) {
+				console.info(e.type, d, document.body)
+			});
+		});
+	</script>
+
+
+</body>
+</html>
