@@ -1,19 +1,23 @@
 {
 	"name": "connexionjs",
 	"description": "Mediator library",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"license": "MIT",
 	"author": "constgen",
 	"main": "src/index.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/cgenchevsky/connexionjs.git"
+	},
 	"keywords": [
 		"connexion",
 		"connection",
 		"mediator",
-		"cross-frame"
+		"cross-frame",
+		"messaging"
 	],
 	"dependencies": {
 		"systemjs": "latest",
-		"rx-core-binding": "^4.0.7",
 		"rx-lite": "^4.0.7",
 		"es6-collections": "^0.5.5"
 	},

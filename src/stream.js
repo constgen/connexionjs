@@ -3,12 +3,14 @@
 var Rx = require('rx-lite');
 
 var EventStream = function (initialValue) {
+	this.value = initialValue;
 	this.observable = new Rx.BehaviorSubject(initialValue);
 	this.event = this.observable.publish();
 	this.event.connect();
 };
 
 EventStream.prototype.emit = function (detail) {
+	this.value = detail;
 	return this.observable.onNext(detail);
 };
 
@@ -20,7 +22,8 @@ EventStream.prototype.observe = function (callback) {
 	return this.observable.subscribe(callback);
 };
 
-EventStream.prototype.dispose = function () {
+EventStream.prototype.dispose = function() {
+	this.value = undefined;
 	this.observable.onCompleted();
 	return this.observable.dispose();
 };

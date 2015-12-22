@@ -9,9 +9,25 @@ var channel = exports, //exportable
 	globalScope = environment.global,
 	isNodeJs = environment.isNodeJs;
 
+var whenGuiReady = new Promise(function(resolve, reject) {
+	if (globalScope.process /*&& ('node-webkit' in global.process.versions)*/) {
+		var timerId = setInterval(function() {
+			if (globalScope.window) {
+				clearInterval(timerId);
+				var gui = globalScope.window.nwDispatcher.requireNwGui();
+				resolve(gui);
+			}
+		}, 10);
+	}
+	else {
+		reject(new Error('Not a Node-Webkit environment'));
+	}
+});
 
 /**
  * Creates a collection of all child frames/iframes windows objects. Takes into a count deeper nested frames.
+ * @param [Window] topWin - Main document window, where to search child frames
+ * @returns [Array] - Array of all child windows.
  */
 channel.getAllChildWindows = function (topWin) {
 	var wins = [],
@@ -29,23 +45,11 @@ channel.getAllChildWindows = function (topWin) {
 	return wins;
 };
 
-channel.getCurrentNWWindow = function () {
-	return new Promise(function (resolve, reject) {
-		if (globalScope.process /*&& ('node-webkit' in global.process.versions)*/) {
-			var uiTimeoutId = setInterval(function () {
-				if (globalScope.window) {
-					clearInterval(uiTimeoutId);
-					var gui = globalScope.window.require('nw.gui');
-					var win = gui.Window.get();
-					resolve(win);
-				}
-			}, 10);
-		}
-		else {
-			reject(new Error('Not a Node-Webkit environment'));
-		}
+channel.getCurrentNWWindow = function() {
+	return whenGuiReady.then(function(gui) {
+		return gui.Window.get();
 	});
-}
+};
 
 /**
  * Sends a message to other windows with an event object attached.
@@ -58,20 +62,29 @@ channel.sendMessage = function (connexionMessage) {
 
 	origin = '*'; //!!!!!!!!
 	
-	browserFrames.forEach(function (win) {
-		try {
-			win.postMessage(connexionMessage, origin);
-		} catch (err) {
-			console.error(err, connexionMessage);
-			//var e;
-			//e = win.document.createEvent('Event')
-			//e.initEvent('message', false, false)
-			//e.data = message
-			//e.origin = origin
-			//e.source = window
-			//win.dispatchEvent(e)
-		}
-	});
+	if (isNodeJs) {
+		channel.getCurrentNWWindow().then(function(nwWindow) {
+			browserFrames.forEach(function(win) {
+				nwWindow.eval(win.frameElement || null, 'window.postMessage(\'' + connexionMessage + '\', "' + origin + '");');
+			});
+		});
+	}
+	else {
+		browserFrames.forEach(function(win) {
+			try {
+				win.postMessage(connexionMessage, origin);
+			} catch (err) {
+				console.error(err, connexionMessage);
+				//var e;
+				//e = win.document.createEvent('Event')
+				//e.initEvent('message', false, false)
+				//e.data = message
+				//e.origin = origin
+				//e.source = window
+				//win.dispatchEvent(e)
+			}
+		});
+	}
 }
 
 channel.sendEvent = function (event) {
@@ -95,11 +108,12 @@ channel.sendSetupResponse = function (setup) {
 channel.onMessage = function (handler, messageCriteria, once) {
 	var browserWindow = globalScope.window;
 	if (browserWindow && browserWindow.addEventListener && typeof handler === 'function') {
-		browserWindow.addEventListener('message', function onmessage(e) {
+		browserWindow.addEventListener('message', function onMessagePosted(e) {
 			//e.data
-			//e.source - some window which called postMessage
+			//e.source - some window, which called `postMessage`
 			//e.origin
-			var message = e.data,
+			var event = new this.MessageEvent('message', e), //fixes crahes in NWjs, when read `e.data`
+				message = event.data,
 				data,
 				setup,
 				setupResponse;
@@ -121,10 +135,10 @@ channel.onMessage = function (handler, messageCriteria, once) {
 						|| (data.length && data[0].event.key !== eventKey) //filter setuped data that is sent back
 					)
 				) {
-					handler(data);
 					if (once) { //detach handler if should be handled only once
-						browserWindow.removeEventListener('message', onmessage, false);
+						this.removeEventListener('message', onMessagePosted, false);
 					}
+					handler(data);
 				}
 			}
 		}, false);
@@ -133,7 +147,7 @@ channel.onMessage = function (handler, messageCriteria, once) {
 
 channel.onEvent = function (handler) {
 	return channel.onMessage(function (event) {
-		if (event //if message is from Mediator
+		if (event //if message is from a Connexion
 			&& event.key !== eventKey //filter messages that are sent back
 		) {
 			handler(event);
@@ -194,7 +208,7 @@ channel.getStreamsData = function () {
 		var stream = eventStreams[eventType];
 		return {
 			name: eventType,
-			event: stream.observable.value
+			event: stream.value
 		};
 	});
 };
@@ -223,7 +237,7 @@ channel.setStreamsData = function (streamsData) {
 		// or an event is later, than a local event, then emit a newer event to update a value in listeners
 		else {
 			stream = eventStreams[name];
-			streamValue = stream.observable.value;
+			streamValue = stream.value;
 			if (event.timeStamp > streamValue.timeStamp) {
 				channel.invokeEvent(event);
 			}
@@ -256,11 +270,11 @@ emitter.emit = function (type, detail) {
 if (isNodeJs) { //NW
 	channel.getCurrentNWWindow().then(function (win) {
 		//listen, when new page is open
-		win.on('loaded', function (e) {
+		win.on('loaded', function () {
 			var browserWindow = globalScope.window;
 			//listen main window only once
-			if (!browserWindow.__ConnexionNodeChannel__) {
-				browserWindow.__ConnexionNodeChannel__ = true; //mark as listened by Node
+			if (!browserWindow.__ConnexionNodeChannel) {
+				browserWindow.__ConnexionNodeChannel = true; //mark as listened by Node
 				channel.attachMessageHandlers();
 			}
 		});
