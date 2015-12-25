@@ -6629,6 +6629,7 @@ $__System.registerDynamic("8", ["7"], true, function($__require, exports, module
     return this.observable.subscribe(callback);
   };
   EventStream.prototype.dispose = function() {
+    this.value = undefined;
     this.observable.onCompleted();
     return this.observable.dispose();
   };
