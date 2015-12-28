@@ -7,6 +7,7 @@
 module.exports = function (grunt) {
 	var DOC_DIR = 'doc',
 		BUILD_DIR = 'dist',
+		TEST_DIR = 'test',
 		SRC_DIR = 'src';
 
 	grunt.initConfig({
@@ -43,20 +44,20 @@ module.exports = function (grunt) {
 		clean: {
 			doc: [DOC_DIR],
 			build: [BUILD_DIR],
-			test: ['test/specs.js']
+			test: [TEST_DIR + '/test.js']
 		},
 		jasmine: {
 			testAll: {
 				//src: '',
 				options: {
-					polyfills: ['src/libs/polyfills.js'],
+					polyfills: ['libs/polyfills/polyfills.js'],
 					vendor: [
-						'src/libs/systemjs/system.js'
+						'node_modules/systemjs/dist/system.src.js'
 					],
 					//helpers: [''],
 					keepRunner: false,
-					outfile: 'test/specs.html',
-					specs: ['test/specs.js']
+					outfile: TEST_DIR + '/test.html',
+					specs: [TEST_DIR + '/test.js']
 				}
 			}
 		},
@@ -86,13 +87,13 @@ module.exports = function (grunt) {
 				}
 			},
 			test: {
-				src:  'test/spec/spec.js',
-				dest: 'test/specs.js',
+				src:  TEST_DIR + '/specs/specs.js',
+				dest: TEST_DIR + '/test.js',
 				options: {
-					baseURL: 'test',
+					baseURL: './',
 					type: 'sfx', //sfx, bundle
 					format: 'amd',
-					config: 'system.config.js'
+					config: 'system.test.config.js'
 				}
 			}
 		}

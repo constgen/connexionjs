@@ -1,9 +1,9 @@
 {
 	"name": "connexionjs",
 	"description": "Mediator library",
-	"version": "0.2.4",
+	"version": "0.2.5",
 	"license": "MIT",
-	"author": "constgen",
+	"author": "cgenchevsky",
 	"main": "src/index.js",
 	"repository": {
 		"type": "git",
@@ -19,6 +19,8 @@
 	"dependencies": {
 		"systemjs": "latest",
 		"rx-lite": "^4.0.7",
+		"rx-core-binding": "^4.0.7",
+		"rx-core": "^4.0.7",
 		"es6-collections": "^0.5.5"
 	},
 	"devDependencies": {
@@ -31,6 +33,7 @@
 	},
 	"scripts": {
 		"test": "grunt test",
-		"build": "grunt build"
+		"start": "grunt build",
+		"prepublish": "grunt test && grunt build"
 	}
 }
