@@ -6,7 +6,7 @@
  */
 var connexion = exports;
 
-connexion.version = '0.2.4';
+connexion.version = '0.3.0';
 
 //Node webkit patch. Should be removed in the future
 //require('./emitter.nw');

@@ -840,13 +840,14 @@ $__System.registerDynamic("2", ["3", "4", "5"], true, function($__require, expor
   global.define = undefined;
   var environment = $__require('3'),
       emitter = $__require('4'),
-      event = $__require('5');
+      ConnexionEvent = $__require('5');
   var channel = exports,
-      eventKey = event.key,
+      eventKey = ConnexionEvent.key,
       emitterEmit = emitter.emit,
       globalScope = environment.global,
-      isNodeJs = environment.isNodeJs;
-  var whenGuiReady = new Promise(function(resolve, reject) {
+      isNodeJs = environment.isNodeJs,
+      connextionMessageRegExp = /^__([A-Za-z]+?)__:/;
+  var whenGuiReady = new Promise(function(resolve) {
     if (globalScope.process) {
       var timerId = setInterval(function() {
         if (globalScope.window) {
@@ -855,8 +856,6 @@ $__System.registerDynamic("2", ["3", "4", "5"], true, function($__require, expor
           resolve(gui);
         }
       }, 10);
-    } else {
-      reject(new Error('Not a Node-Webkit environment'));
     }
   });
   channel.getAllChildWindows = function(topWin) {
@@ -910,64 +909,65 @@ $__System.registerDynamic("2", ["3", "4", "5"], true, function($__require, expor
     var connexionMessage = channel._createSetupResponse(setup);
     channel.sendMessage(connexionMessage);
   };
-  channel.onMessage = function(handler, messageCriteria, once) {
+  channel.onMessage = function(handler, messageType, once) {
     var browserWindow = globalScope.window;
-    if (browserWindow && browserWindow.addEventListener && typeof handler === 'function') {
+    if (browserWindow && browserWindow.addEventListener) {
       browserWindow.addEventListener('message', function onMessagePosted(e) {
-        var event = new this.MessageEvent('message', e),
+        var isMessageEventWorking = this.MessageEvent && this.MessageEvent.length,
+            event = isMessageEventWorking ? (new this.MessageEvent('message', e)) : e,
             message = event.data,
-            data,
-            setup,
-            setupResponse;
-        if (!message) {
-          return;
-        }
-        if (typeof message === 'string') {
-          message = JSON.parse(message);
-        }
-        if (messageCriteria in message) {
-          data = message[messageCriteria];
-          if (data && ((('key' in data) && data.key !== eventKey) || (data.length && data[0].event.key !== eventKey))) {
-            if (once) {
-              this.removeEventListener('message', onMessagePosted, false);
+            connectionCretaria,
+            connectionType,
+            connectionMatch,
+            data;
+        if (message && typeof message === 'string') {
+          connectionMatch = message.match(connextionMessageRegExp);
+          if (connectionMatch) {
+            connectionCretaria = connectionMatch[0];
+            connectionType = connectionMatch[1];
+            if (connectionType === messageType) {
+              data = JSON.parse(message.substr(connectionCretaria.length));
             }
-            handler(data);
           }
+        }
+        if (data && ((('key' in data) && data.key !== eventKey) || (data.length && data[0].event.key !== eventKey))) {
+          if (once) {
+            this.removeEventListener('message', onMessagePosted, false);
+          }
+          handler(data);
         }
       }, false);
     }
+    browserWindow = undefined;
   };
   channel.onEvent = function(handler) {
     return channel.onMessage(function(event) {
       if (event && event.key !== eventKey) {
         handler(event);
       }
-    }, '__connexionEvent__');
+    }, 'connexionEvent');
   };
   channel.onSetup = function(handler) {
-    return channel.onMessage(handler, '__connexionSetup__');
+    return channel.onMessage(handler, 'connexionSetup');
   };
   channel.onceSetupResponse = function(handler) {
-    return channel.onMessage(handler, '__connexionSetupResponse__', true);
+    return channel.onMessage(handler, 'connexionSetupResponse', true);
   };
   channel.invokeEvent = function(event) {
     return emitterEmit.call(emitter, event);
   };
   channel._createEvent = function(event) {
-    var data = {__connexionEvent__: event};
-    return JSON.stringify(data);
+    return '__connexionEvent__:' + JSON.stringify(event);
   };
   channel._createSetup = function(setupData) {
-    var data = {__connexionSetup__: [{event: {key: eventKey}}]};
-    return JSON.stringify(data);
+    return '__connexionSetup__:' + JSON.stringify([{event: {key: eventKey}}]);
   };
   channel._createSetupResponse = function(setupData) {
-    var data = {__connexionSetupResponse__: setupData};
-    return JSON.stringify(data);
+    return '__connexionSetupResponse__:' + JSON.stringify(setupData);
   };
   channel.getStreamsData = function() {
     var eventStreams = emitter.subjects,
-        eventTypes = Object.keys(emitter.subjects);
+        eventTypes = Object.keys(eventStreams);
     return eventTypes.map(function(eventType) {
       var stream = eventStreams[eventType];
       return {
@@ -977,8 +977,7 @@ $__System.registerDynamic("2", ["3", "4", "5"], true, function($__require, expor
     });
   };
   channel.setStreamsData = function(streamsData) {
-    var eventStreams = emitter.subjects,
-        eventTypes = Object.keys(emitter.subjects);
+    var eventStreams = emitter.subjects;
     streamsData.forEach(function(data) {
       var name = data.name,
           event = data.event,
@@ -6974,7 +6973,7 @@ $__System.registerDynamic("1", ["2", "3", "4"], true, function($__require, expor
   global.define = undefined;
   'format cjs';
   var connexion = exports;
-  connexion.version = '0.2.4';
+  connexion.version = '0.3.0';
   connexion.chanel = $__require('2');
   var DOMWindow = $__require('3').window,
       emitter = $__require('4');

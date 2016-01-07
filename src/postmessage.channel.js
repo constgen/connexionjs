@@ -1,15 +1,17 @@
 ﻿'use strict';
 var environment = require('./environment.js'),
 	emitter = require('./emitter.js'),
-	event = require('./event.js');
+	ConnexionEvent = require('./event.js');
 
 var channel = exports, //exportable
-	eventKey = event.key,
+	eventKey = ConnexionEvent.key,
 	emitterEmit = emitter.emit,
 	globalScope = environment.global,
-	isNodeJs = environment.isNodeJs;
+	isNodeJs = environment.isNodeJs,
+	connextionMessageRegExp = /^__([A-Za-z]+?)__:/;
 
-var whenGuiReady = new Promise(function(resolve, reject) {
+var whenGuiReady = new Promise(function(resolve) {
+    //resolved only in a Node-Webkit environment
 	if (globalScope.process /*&& ('node-webkit' in global.process.versions)*/) {
 		var timerId = setInterval(function() {
 			if (globalScope.window) {
@@ -18,9 +20,6 @@ var whenGuiReady = new Promise(function(resolve, reject) {
 				resolve(gui);
 			}
 		}, 10);
-	}
-	else {
-		reject(new Error('Not a Node-Webkit environment'));
 	}
 });
 
@@ -61,16 +60,16 @@ channel.sendMessage = function (connexionMessage) {
 		browserFrames = browserWindow.top && [browserWindow.top].concat(channel.getAllChildWindows(browserWindow.top)) || [];
 
 	origin = '*'; //!!!!!!!!
-	
+
 	if (isNodeJs) {
-		channel.getCurrentNWWindow().then(function(nwWindow) {
-			browserFrames.forEach(function(win) {
+		channel.getCurrentNWWindow().then(function (nwWindow) {
+			browserFrames.forEach(function (win) {
 				nwWindow.eval(win.frameElement || null, 'window.postMessage(\'' + connexionMessage + '\', "' + origin + '");');
 			});
 		});
 	}
 	else {
-		browserFrames.forEach(function(win) {
+		browserFrames.forEach(function (win) {
 			try {
 				win.postMessage(connexionMessage, origin);
 			} catch (err) {
@@ -85,64 +84,70 @@ channel.sendMessage = function (connexionMessage) {
 			}
 		});
 	}
-}
+};
 
 channel.sendEvent = function (event) {
 	var connexionMessage = channel._createEvent(event);
 	channel.sendMessage(connexionMessage);
-}
+};
 
 channel.sendSetup = function (setup) {
 	var connexionMessage = channel._createSetup(setup);
 	channel.sendMessage(connexionMessage);
-}
+};
 
 channel.sendSetupResponse = function (setup) {
 	var connexionMessage = channel._createSetupResponse(setup);
 	channel.sendMessage(connexionMessage);
-}
+};
 
 /**
  * Subscribes to messages from other windows.
  */
-channel.onMessage = function (handler, messageCriteria, once) {
+channel.onMessage = function (handler, messageType, once) {
 	var browserWindow = globalScope.window;
-	if (browserWindow && browserWindow.addEventListener && typeof handler === 'function') {
+	if (browserWindow && browserWindow.addEventListener) {
 		browserWindow.addEventListener('message', function onMessagePosted(e) {
 			//e.data
 			//e.source - some window, which called `postMessage`
 			//e.origin
-			var event = new this.MessageEvent('message', e), //fixes crahes in NWjs, when read `e.data`
+			var isMessageEventWorking = this.MessageEvent && this.MessageEvent.length,
+				event = isMessageEventWorking ? (new this.MessageEvent('message', e)) : e, //fixes crashes in NWjs, when read `e.data`
 				message = event.data,
-				data,
-				setup,
-				setupResponse;
+				connectionCretaria,
+				connectionType,
+				connectionMatch,
+				data;
 
-			if (!message) {
-				return; //EXIT, if message is empty
-			}
+			//parse message without try-catch
+			if (message && typeof message === 'string') {
+				connectionMatch = message.match(connextionMessageRegExp);
 
-			if (typeof message === 'string') {
-				message = JSON.parse(message);
-			}
-
-			if (messageCriteria in message) {
-				data = message[messageCriteria];
-				if (
-					data //if message is from Connexion
-					&& (
-						(('key' in data) && data.key !== eventKey) //filter events that are sent back
-						|| (data.length && data[0].event.key !== eventKey) //filter setuped data that is sent back
-					)
-				) {
-					if (once) { //detach handler if should be handled only once
-						this.removeEventListener('message', onMessagePosted, false);
+				if (connectionMatch) {
+					connectionCretaria = connectionMatch[0];
+					connectionType = connectionMatch[1];
+					if (connectionType === messageType) {
+						data = JSON.parse(message.substr(connectionCretaria.length));
 					}
-					handler(data);
 				}
 			}
+
+			if (
+				data //if message is from Connexion
+				&& (
+					(('key' in data) && data.key !== eventKey) //filter events that are sent back
+					|| (data.length && data[0].event.key !== eventKey) //filter setup data that is sent back
+				)
+			) {
+				if (once) { //detach handler if should be handled only once
+					this.removeEventListener('message', onMessagePosted, false);
+				}
+				handler(data);
+			}
+			
 		}, false);
 	}
+	browserWindow = undefined;
 };
 
 channel.onEvent = function (handler) {
@@ -152,58 +157,49 @@ channel.onEvent = function (handler) {
 		) {
 			handler(event);
 		}
-	}, '__connexionEvent__');
+	}, 'connexionEvent');
 };
 
 channel.onSetup = function (handler) {
-	return channel.onMessage(handler, '__connexionSetup__');
+	return channel.onMessage(handler, 'connexionSetup');
 };
 
 channel.onceSetupResponse = function (handler) {
-	return channel.onMessage(handler, '__connexionSetupResponse__', true);
+	return channel.onMessage(handler, 'connexionSetupResponse', true);
 };
 
 /**
  * Initiates event in a current window.
  */
 channel.invokeEvent = function (event) {
-	//use event object declaretion as a first parameter
+	//use event object declaration as a first parameter
 	return emitterEmit.call(emitter, event);
-}
+};
 
 /**
  * Message creator 
  */
 channel._createEvent = function (event) {
-	var data = {
-		__connexionEvent__: event
-	}
-	return JSON.stringify(data);
-}
+	return '__connexionEvent__:' + JSON.stringify(event);
+};
 
 /**
  * Setup data creator
  */
 channel._createSetup = function (setupData) {
-	var data = {
-		__connexionSetup__: [{ event: { key: eventKey }}]
-	}
-	return JSON.stringify(data);
-}
+	return '__connexionSetup__:' + JSON.stringify([{ event: { key: eventKey } }]);
+};
 
 /**
  * Setup response data creator
  */
 channel._createSetupResponse = function (setupData) {
-	var data = {
-		__connexionSetupResponse__: setupData
-	}
-	return JSON.stringify(data);
-}
+	return '__connexionSetupResponse__:' + JSON.stringify(setupData);
+};
 
 channel.getStreamsData = function () {
 	var eventStreams = emitter.subjects,
-		eventTypes = Object.keys(emitter.subjects);
+		eventTypes = Object.keys(eventStreams);
 	return eventTypes.map(function (eventType) {
 		var stream = eventStreams[eventType];
 		return {
@@ -214,8 +210,7 @@ channel.getStreamsData = function () {
 };
 
 channel.setStreamsData = function (streamsData) {
-	var eventStreams = emitter.subjects,
-		eventTypes = Object.keys(emitter.subjects);
+	var eventStreams = emitter.subjects;
 
 	streamsData.forEach(function (data) {
 		var name = data.name,
@@ -252,7 +247,7 @@ channel.attachMessageHandlers = function () {
 		channel.setStreamsData(setup);
 	});
 	channel.onceSetupResponse(channel.setStreamsData);
-}
+};
 
 
 
@@ -264,7 +259,7 @@ channel.sendSetup(channel.getStreamsData());
 emitter.emit = function (type, detail) {
 	var event = emitterEmit.call(emitter, type, detail);
 	channel.sendEvent(event);
-}
+};
 
 //attach "on message" handler
 if (isNodeJs) { //NW
