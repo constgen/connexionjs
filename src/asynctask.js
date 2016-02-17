@@ -14,7 +14,9 @@ if (typeof Promise !== 'undefined') { //use microtask
 				reject: reject
 			};
 			resolve();
-		}).then(callback);
+		}).then(callback).catch(function(err) {
+			console.error(err)
+		});
 	};
 	cancelTask = function () {
 		implementation.reject();
