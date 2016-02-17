@@ -3,11 +3,11 @@
 	"description": "Mediator library",
 	"version": "0.3.0",
 	"license": "MIT",
-	"author": "cgenchevsky",
+	"author": "constgen",
 	"main": "src/index.js",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cgenchevsky/connexionjs.git"
+		"url": "https://github.com/constgen/connexionjs.git"
 	},
 	"keywords": [
 		"connexion",
