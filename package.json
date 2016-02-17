@@ -1,7 +1,7 @@
 {
 	"name": "connexionjs",
 	"description": "Mediator library",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"license": "MIT",
 	"author": "constgen",
 	"main": "src/index.js",
