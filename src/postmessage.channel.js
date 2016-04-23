@@ -259,6 +259,7 @@ channel.sendSetup(channel.getStreamsData());
 emitter.emit = function (type, detail) {
 	var event = emitterEmit.call(emitter, type, detail);
 	channel.sendEvent(event);
+	return event;
 };
 
 //attach "on message" handler

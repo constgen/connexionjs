@@ -1,58 +1,45 @@
 ﻿'use strict';
-var setAsyncTask = require('./asynctask.js').setAsyncTask,
+var setAsyncTask = require('./asynctask.js').setAsync,
 	ConnexionEvent = require('./event.js'),
 	environment = require('./environment.js'),
-	EventStream = require('./stream.js'),
+	Observable = require('./observable.js'),
 	es6collections = require('es6-collections'),
 	WeakMap = es6collections.WeakMap || environment.global.WeakMap,
 	isNodeJs = environment.isNodeJs;
 
 function createObserver(callback) {
-	var observer;
-	observer = function (event) {
+	var observer = function (event) {
 		if (event.isCanceled) {
 			return; //EXIT
 		}
 		callback(event.detail, event);
 	};
+	observer.callback = callback;
 	return observer;
-}
-
-function createAsyncObserver(callback) {
-	var observer;
-	observer = function (event) {
-		if (event.isCanceled) {
-			return; //EXIT
-		}
-		setAsyncTask(function () {
-			callback(event.detail, event);
-		});
-	};
-	return observer;
-}
-
-function ensureStreamExists(emitter, name) {
-	var stream = emitter.subjects[name];
-	if (!stream) {
-		stream = new EventStream(new ConnexionEvent({ type: name, timeStamp: 0}));
-		emitter.subscriptions[name] = new WeakMap();
-		emitter.subjects[name] = stream;
-	}
-	return stream;
-}
-
-function ensureStreamDestroyed(emitter, name) {
-	var stream = emitter.subjects[name];
-	if (stream) {
-		emitter.subscriptions[name] = null;
-		emitter.subjects[name] = null;
-	}
-	return stream;
 }
 
 var Emitter = function () {
 	this.subjects = Object.create(null);
 	this.subscriptions = Object.create(null);
+};
+
+Emitter.prototype._ensureSubjectExists = function (name) {
+	var subject = this.subjects[name];
+	if (!subject) {
+		subject = new Observable(new ConnexionEvent({ type: name, timeStamp: 0 }));
+		this.subscriptions[name] = new WeakMap();
+		this.subjects[name] = subject;
+	}
+	return subject;
+};
+
+Emitter.prototype._ensureSubjectDestroyed = function (name) {
+	var subject = this.subjects[name];
+	if (subject) {
+		this.subscriptions[name] = undefined;
+		this.subjects[name] = undefined;
+	}
+	return subject;
 };
 
 /**
@@ -62,8 +49,8 @@ var Emitter = function () {
  * @return {Object} Host object
  */
 Emitter.prototype.emit = function (eventType, detail) {
-	var stream,
-		commonStream,
+	var subject,
+		commonSubject,
 		eventData = eventType,
 		event;
 
@@ -82,15 +69,15 @@ Emitter.prototype.emit = function (eventType, detail) {
 		eventType = event.type;
 	}
 
-	stream = ensureStreamExists(this, eventType);
-	commonStream = ensureStreamExists(this, '*');
+	subject = this._ensureSubjectExists(eventType);
+	commonSubject = this._ensureSubjectExists('*');
 
 	//async emitment
-	setAsyncTask(stream.emit.bind(stream, event));
+	setAsyncTask(subject.emit.bind(subject, event));
 
 	//async wildcard emitment
 	if (eventType !== '*') {
-		setAsyncTask(commonStream.emit.bind(commonStream, event));
+		setAsyncTask(commonSubject.emit.bind(commonSubject, event));
 	}
 	return event;
 };
@@ -103,9 +90,9 @@ Emitter.prototype.emit = function (eventType, detail) {
  */
 Emitter.prototype.listen = function(eventType, handler) {
 	var listeners,
-		stream,
+		subject,
 		observer,
-		subscription;
+		observers;
 	//object variant
 	if (typeof eventType === 'object' && eventType) {
 		listeners = eventType;
@@ -115,15 +102,15 @@ Emitter.prototype.listen = function(eventType, handler) {
 	}
 	//eventtype-handler variant
 	else if (eventType && handler) {
-		stream = ensureStreamExists(this, eventType);
+		subject = this._ensureSubjectExists(eventType);
 		observer = createObserver(handler);
-		subscription = stream.listen(observer);
-		listeners = this.subscriptions[eventType].get(handler) || [];
-		listeners.push(subscription);
-		this.subscriptions[eventType].set(handler, listeners);
-		subscription.callback = handler;
+		subject.listen(observer);
+							
+		observers = this.subscriptions[eventType].get(handler) || [];
+		observers.push(observer);
+		this.subscriptions[eventType].set(handler, observers);
 	}
-	return subscription;
+	return observer;
 };
 
 /**
@@ -131,28 +118,28 @@ Emitter.prototype.listen = function(eventType, handler) {
  */
 Emitter.prototype.observe = function(eventType, handler) {
 	var listeners,
-		stream,
+		subject,
 		observer,
-		subscription;
+		observers;
 	//object variant
 	if (typeof eventType === 'object' && eventType) {
 		listeners = eventType;
 		for (eventType in listeners) {
-			this.listen(eventType, listeners[eventType]);
+			this.observe(eventType, listeners[eventType]);
 		}
 	}
 	//eventtype-handler variant
 	else if (eventType && handler) {
-		stream = ensureStreamExists(this, eventType);
+		subject = this._ensureSubjectExists(eventType);
 		//async observing
-		observer = createAsyncObserver(handler);
-		subscription = stream.observe(observer);
-		listeners = this.subscriptions[eventType].get(handler) || [];
-		listeners.push(subscription);
-		this.subscriptions[eventType].set(handler, listeners);
-		subscription.callback = handler;
+		observer = createObserver(handler);
+		subject.observe(observer);
+		
+		observers = this.subscriptions[eventType].get(handler) || [];
+		observers.push(observer);
+		this.subscriptions[eventType].set(handler, observers);
 	}
-	return subscription;
+	return observer;
 };
 
 /**
@@ -160,15 +147,15 @@ Emitter.prototype.observe = function(eventType, handler) {
  */
 Emitter.prototype.unsubscribe = function (eventType, handler) {
 	var listeners,
-		stream,
-		streams,
-		subscription,
-		subscriptions,
+		subject,
+		subjects,
+		observer,
+		observers,
 		i;
 	//all listeners and all events
 	if (!eventType && !handler) {
-		streams = this.subjects;
-		for (eventType in streams) {
+		subjects = this.subjects;
+		for (eventType in subjects) {
 			this.unsubscribe(eventType);
 		}
 	}
@@ -181,52 +168,59 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 	}
 	//all listeners of a given event
 	else if (eventType && !handler) {
-		stream = this.subjects[eventType];
-		if (stream) {
-			//finish old stream
-			stream.dispose();
-			ensureStreamDestroyed(this, eventType); //releases all subscriptions references
+		subject = this.subjects[eventType];
+		if (subject) {
+			subject.unsubscribe();
+			//setAsyncTask(subject.unsubscribe.bind(subject));
+			this._ensureSubjectDestroyed(eventType); //releases all subscriptions references
 		}
 	}
 	//eventtype-handler variant
 	else if (eventType && handler) {
-		subscriptions = this.subscriptions[eventType];
-		if (subscriptions) {
-			//if the second argument is a disposable object
-			if ('dispose' in handler) {
-				subscription = handler;
-				handler = subscription.callback;
-				//remove handler
-				subscription.dispose();
-				subscription.callback = undefined;
+		subject = this.subjects[eventType];
+		//if (subject) {
+		//	subject.unsubscribe(handler);
+		//}
 
-				listeners = subscriptions.get(handler);
-				if (listeners) {
-					i = -1;
-					while (++i in listeners) {
-						if (subscription === listeners[i]) {
-							//clear reference				
-							listeners.splice(i, 1);			
-							break;
-						}
+
+
+		
+		listeners = this.subscriptions[eventType];
+		if (listeners) {
+			//if the second argument is an observer
+			if ('callback' in handler) {
+				observer = handler;
+				handler = observer.callback;
+				//remove handler
+				subject.unsubscribe(observer);
+				//setAsyncTask(subject.unsubscribe.bind(subject, observer));
+				observer.callback = undefined;
+
+				observers = listeners.get(handler);
+				if (observers) {
+					i = observers.indexOf(observer);
+					if (~index) {
+						observers.splice(i, 1);
 					}
 				}
 			}
 			else {
-				listeners = subscriptions.get(handler);
-				if (listeners) {
+				observers = listeners.get(handler);
+				if (observers) {
 					i = -1;
-					while (++i in listeners) {
-						subscription = listeners[i];
+					while (++i in observers) {
+						observer = observers[i];
 						//remove handler
-						subscription.dispose();
-						subscription.callback = undefined;
+						//subject.unsubscribe(observer);
+						setAsyncTask(subject.unsubscribe.bind(subject, observer));
+						observer.callback = undefined;
 					}
-					subscriptions.delete(handler);
+					listeners.delete(handler);
 				}
 			}
 			
 		}
+		
 	}
 	return this; 
 };

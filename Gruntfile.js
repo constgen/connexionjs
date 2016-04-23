@@ -26,7 +26,8 @@ module.exports = function (grunt) {
 			sources: {
 				files: [
 					'src/libs/polyfills.js',
-					'src/*.js'
+					'src/**/*.js',
+                    'test/**/*.js'
 				],
 				//tasks: ['jshint'],
 				options: {

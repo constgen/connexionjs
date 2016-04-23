@@ -6,7 +6,7 @@
  */
 var connexion = exports;
 
-connexion.version = '0.3.1';
+connexion.version = '0.4.0';
 
 connexion.chanel = require('./postmessage.channel.js');
 

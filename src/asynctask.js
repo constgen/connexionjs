@@ -1,6 +1,6 @@
 ﻿//Internal task scheduling
 'use strict';
-var Stack = [],
+var stack = [],
 	ids = {},
 	idCounter = 0,
 	implementation,
@@ -32,23 +32,23 @@ else {// fallback
 }
 
 //export
-exports.setAsyncTask = function (taskFunc) {
+exports.setAsync = function (taskFunc) {
 	if (typeof taskFunc !== 'function') {
 		return;
 	}
 	var id = idCounter++;
 	ids[id] = taskFunc; //save reference to callback
 	//If already has tasks, than just add new one. Execution is already scheduled.
-	if (Stack.length) {
-		Stack.push(taskFunc);
+	if (stack.length) {
+		stack.push(taskFunc);
 	}
 		//Else add first task and schedule async execution.
 	else {
-		Stack.push(taskFunc);
+		stack.push(taskFunc);
 		createTask(function () {
 			var task;
-			while (Stack.length) {
-				task = Stack.shift();
+			while (stack.length) {
+				task = stack.shift();
 				task();
 			}
 		});
@@ -56,20 +56,20 @@ exports.setAsyncTask = function (taskFunc) {
 	return id;
 };
 
-exports.clearAsyncTask = function (id) {
-	if (typeof id !== 'number' || !(id in ids) || !Stack.length) {
+exports.clearAsync = function (id) {
+	if (typeof id !== 'number' || !(id in ids) || !stack.length) {
 		return;
 	}
 	var task, i = -1;
 
-	while (++i in Stack) {
-		task = Stack[i];
+	while (++i in stack) {
+		task = stack[i];
 		if (task === ids[id]) {
-			Stack.splice(i, 1);
+			stack.splice(i, 1);
 			delete ids[id];
 		}
 	}
-	if (!Stack.length) { //cancel async operation if no functions to execute
+	if (!stack.length) { //cancel async operation if no functions to execute
 		cancelTask();
 	}
 };

@@ -1,11 +1,10 @@
 ﻿'use strict';
 'format cjs';
 describe('Module', function () {
+	require('./index.js');
+	require('./environment.js');
 	require('./asynctask.js');
-	//require('./emitter.js');
-	//require('./environment.js');
 	require('./event.js');
-	//require('./index.js');
-	require('./promise.js');
-	require('./stream.js');
+	require('./observable.js');
+	require('./emitter.js');
 });

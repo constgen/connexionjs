@@ -1,6 +1,8 @@
 ﻿'use strict';
 
-/* Internal event constructor*/
+/**
+ * Internal event constructor
+ */
 var ConnexionEvent = function (origin) {
 	this.emitter = origin && origin.emitter || '';
 	this.scope = origin && origin.scope || '';
@@ -13,7 +15,7 @@ var ConnexionEvent = function (origin) {
 };
 
 //Remove Object inheritance to be possible to convert to JSON
-//MediatorEvent.prototype = Object.create(null);
+//ConnexionEvent.prototype = Object.create(null);
 
 ConnexionEvent.prototype.cancel = function () {
 	this.isCanceled = true;

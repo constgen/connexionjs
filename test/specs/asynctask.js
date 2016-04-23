@@ -1,8 +1,8 @@
 ﻿'use strict';
 
 var task = require('../../src/asynctask.js'),
-	setAsyncTask = task.setAsyncTask,
-	clearAsyncTask = task.clearAsyncTask;
+	setAsyncTask = task.setAsync,
+	clearAsyncTask = task.clearAsync;
 
 
 describe('asynctask', function () {
