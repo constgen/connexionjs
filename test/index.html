@@ -3,22 +3,24 @@
 <head>
 	<meta charset="utf-8">
 	<title>Jasmine Spec Runner v2.1.3</title>
-	<link rel="shortcut icon" type="image/png" href="lib/jasmine-2.1.3/jasmine_favicon.png">
-	<link rel="stylesheet" href="lib/jasmine-2.1.3/jasmine.css">
+	<link rel="shortcut icon" type="image/png" href="../node_modules/jasmine-core/images/jasmine_favicon.png">
+	<link rel="stylesheet" href="../node_modules/jasmine-core/lib/jasmine-core/jasmine.css">
 
 	<script src="http://localhost:35729/livereload.js"></script>
 
-	<script src="lib/jasmine-2.1.3/jasmine.js"></script>
-	<script src="lib/jasmine-2.1.3/jasmine-html.js"></script>
-	<script src="lib/jasmine-2.1.3/boot.js"></script>
-	<script src="../libs/polyfills/polyfills.js"></script>
+	<script src="../node_modules/jasmine-core/lib/jasmine-core/jasmine.js"></script>
+	<script src="../node_modules/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
+	<script src="../node_modules/jasmine-core/lib/jasmine-core/boot.js"></script>
+	
 	<script src="../node_modules/systemjs/dist/system.src.js"></script>
 	<script src="../system.config.js"></script>
-	<script src="system.test.config.js"></script>
 	<script>
-		System.import('./specs/specs.js').then(function () {
-			jasmine.getEnv().execute();
-		});
+		(function(){
+			var currentWindowOnload = window.onload;
+			window.onload = function() {
+				System.import('./spec.js').then(currentWindowOnload);
+			};
+		}());
 	</script>
 
 	

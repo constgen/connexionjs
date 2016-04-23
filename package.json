@@ -24,6 +24,7 @@
 		"grunt-contrib-jshint": "latest",
 		"grunt-contrib-watch": "latest",
 		"grunt-jsdoc": "latest",
+		"jasmine-core": "2.2.0",
 		"grunt-contrib-jasmine": "latest",
 		"grunt-contrib-clean": "^0.6.0",
 		"systemjs-builder": "0.14.15"

@@ -48,12 +48,12 @@ module.exports = function (grunt) {
 			test: [TEST_DIR + '/test.js']
 		},
 		jasmine: {
-			testAll: {
+			dev: {
 				//src: '',
 				options: {
-					polyfills: ['libs/polyfills/polyfills.js'],
+					//polyfills: [''],
 					vendor: [
-						'node_modules/systemjs/dist/system.src.js'
+						'./node_modules/systemjs/dist/system.src.js'
 					],
 					//helpers: [''],
 					keepRunner: false,
@@ -88,7 +88,7 @@ module.exports = function (grunt) {
 				}
 			},
 			test: {
-				src:  TEST_DIR + '/specs/specs.js',
+				src:  TEST_DIR + '/spec.js',
 				dest: TEST_DIR + '/test.js',
 				options: {
 					baseURL: './',
