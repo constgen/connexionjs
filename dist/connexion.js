@@ -307,7 +307,6 @@ $__System.registerDynamic("3", [], true, function($__require, exports, module) {
   (function(self, nodeGlobal, browserWindow, undefined) {
     'use strict';
     var window = self.window || browserWindow || {},
-        document = window.document || {},
         location = window.location || {},
         global = nodeGlobal || (('top' in window) ? (window.top.global || {}) : {}),
         isNodeJs = ('require' in global) && ('process' in global) && (typeof __dirname !== 'undefined') && (global.global === global);
@@ -652,7 +651,7 @@ $__System.registerDynamic("4", ["6", "5", "3", "7", "8"], true, function($__requ
           observers = listeners.get(handler);
           if (observers) {
             i = observers.indexOf(observer);
-            if (~index) {
+            if (~i) {
               observers.splice(i, 1);
             }
           }

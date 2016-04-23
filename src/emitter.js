@@ -199,7 +199,7 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 				observers = listeners.get(handler);
 				if (observers) {
 					i = observers.indexOf(observer);
-					if (~index) {
+					if (~i) {
 						observers.splice(i, 1);
 					}
 				}

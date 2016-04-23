@@ -1,5 +1,6 @@
 ﻿//Internal task scheduling
 'use strict';
+
 var stack = [],
 	ids = {},
 	idCounter = 0,
@@ -14,8 +15,10 @@ if (typeof Promise !== 'undefined') { //use microtask
 				reject: reject
 			};
 			resolve();
-		}).then(callback).catch(function(err) {
-			console.error(err)
+		})
+		.then(callback)
+		.catch(function(err) {
+			console.error(err);
 		});
 	};
 	cancelTask = function () {

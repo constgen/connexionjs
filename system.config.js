@@ -1,4 +1,5 @@
 System.config({
+	defaultJSExtensions: false,
 	map: {
 		'../../src/': 'source:',
 	},

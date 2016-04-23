@@ -31,6 +31,6 @@
 	"scripts": {
 		"test": "grunt test",
 		"start": "grunt build",
-		"prepublish": "grunt test && grunt build"
+		"prepublish": "npm install && grunt test && grunt build"
 	}
 }
