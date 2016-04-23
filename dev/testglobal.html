@@ -6,8 +6,6 @@
     <script src="http://localhost:35729/livereload.js"></script>
 </head>
 <body>
-	<script src="../libs/polyfills/polyfills.js"></script>
-	
 
 	<script src="../dist/connexion.js"></script>
 
@@ -21,7 +19,7 @@
 		}
 	</script>
 
-	<script src="../node_modules/systemjs/dist/system.src.js"></script>
+	<script src="../node_modules/systemjs-builder/node_modules/systemjs/dist/system.src.js"></script>
 	<script>
 		System.import('../dist/connexion.js').then(function (connexion) {
 			console.info(connexion)

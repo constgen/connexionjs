@@ -1,620 +1,14 @@
-"format amd";
-(function(global) {
-
-  var defined = {};
-
-  // indexOf polyfill for IE8
-  var indexOf = Array.prototype.indexOf || function(item) {
-    for (var i = 0, l = this.length; i < l; i++)
-      if (this[i] === item)
-        return i;
-    return -1;
-  }
-
-  var getOwnPropertyDescriptor = true;
-  try {
-    Object.getOwnPropertyDescriptor({ a: 0 }, 'a');
-  }
-  catch(e) {
-    getOwnPropertyDescriptor = false;
-  }
-
-  var defineProperty;
-  (function () {
-    try {
-      if (!!Object.defineProperty({}, 'a', {}))
-        defineProperty = Object.defineProperty;
-    }
-    catch (e) {
-      defineProperty = function(obj, prop, opt) {
-        try {
-          obj[prop] = opt.value || opt.get.call(obj);
-        }
-        catch(e) {}
-      }
-    }
-  })();
-
-  function register(name, deps, declare) {
-    if (arguments.length === 4)
-      return registerDynamic.apply(this, arguments);
-    doRegister(name, {
-      declarative: true,
-      deps: deps,
-      declare: declare
-    });
-  }
-
-  function registerDynamic(name, deps, executingRequire, execute) {
-    doRegister(name, {
-      declarative: false,
-      deps: deps,
-      executingRequire: executingRequire,
-      execute: execute
-    });
-  }
-
-  function doRegister(name, entry) {
-    entry.name = name;
-
-    // we never overwrite an existing define
-    if (!(name in defined))
-      defined[name] = entry;
-
-    // we have to normalize dependencies
-    // (assume dependencies are normalized for now)
-    // entry.normalizedDeps = entry.deps.map(normalize);
-    entry.normalizedDeps = entry.deps;
-  }
-
-
-  function buildGroups(entry, groups) {
-    groups[entry.groupIndex] = groups[entry.groupIndex] || [];
-
-    if (indexOf.call(groups[entry.groupIndex], entry) != -1)
-      return;
-
-    groups[entry.groupIndex].push(entry);
-
-    for (var i = 0, l = entry.normalizedDeps.length; i < l; i++) {
-      var depName = entry.normalizedDeps[i];
-      var depEntry = defined[depName];
-
-      // not in the registry means already linked / ES6
-      if (!depEntry || depEntry.evaluated)
-        continue;
-
-      // now we know the entry is in our unlinked linkage group
-      var depGroupIndex = entry.groupIndex + (depEntry.declarative != entry.declarative);
-
-      // the group index of an entry is always the maximum
-      if (depEntry.groupIndex === undefined || depEntry.groupIndex < depGroupIndex) {
-
-        // if already in a group, remove from the old group
-        if (depEntry.groupIndex !== undefined) {
-          groups[depEntry.groupIndex].splice(indexOf.call(groups[depEntry.groupIndex], depEntry), 1);
-
-          // if the old group is empty, then we have a mixed depndency cycle
-          if (groups[depEntry.groupIndex].length == 0)
-            throw new TypeError("Mixed dependency cycle detected");
-        }
-
-        depEntry.groupIndex = depGroupIndex;
-      }
-
-      buildGroups(depEntry, groups);
-    }
-  }
-
-  function link(name) {
-    var startEntry = defined[name];
-
-    startEntry.groupIndex = 0;
-
-    var groups = [];
-
-    buildGroups(startEntry, groups);
-
-    var curGroupDeclarative = !!startEntry.declarative == groups.length % 2;
-    for (var i = groups.length - 1; i >= 0; i--) {
-      var group = groups[i];
-      for (var j = 0; j < group.length; j++) {
-        var entry = group[j];
-
-        // link each group
-        if (curGroupDeclarative)
-          linkDeclarativeModule(entry);
-        else
-          linkDynamicModule(entry);
-      }
-      curGroupDeclarative = !curGroupDeclarative; 
-    }
-  }
-
-  // module binding records
-  var moduleRecords = {};
-  function getOrCreateModuleRecord(name) {
-    return moduleRecords[name] || (moduleRecords[name] = {
-      name: name,
-      dependencies: [],
-      exports: {}, // start from an empty module and extend
-      importers: []
-    })
-  }
-
-  function linkDeclarativeModule(entry) {
-    // only link if already not already started linking (stops at circular)
-    if (entry.module)
-      return;
-
-    var module = entry.module = getOrCreateModuleRecord(entry.name);
-    var exports = entry.module.exports;
-
-    var declaration = entry.declare.call(global, function(name, value) {
-      module.locked = true;
-
-      if (typeof name == 'object') {
-        for (var p in name)
-          exports[p] = name[p];
-      }
-      else {
-        exports[name] = value;
-      }
-
-      for (var i = 0, l = module.importers.length; i < l; i++) {
-        var importerModule = module.importers[i];
-        if (!importerModule.locked) {
-          for (var j = 0; j < importerModule.dependencies.length; ++j) {
-            if (importerModule.dependencies[j] === module) {
-              importerModule.setters[j](exports);
-            }
-          }
-        }
-      }
-
-      module.locked = false;
-      return value;
-    }, entry.name);
-
-    module.setters = declaration.setters;
-    module.execute = declaration.execute;
-
-    // now link all the module dependencies
-    for (var i = 0, l = entry.normalizedDeps.length; i < l; i++) {
-      var depName = entry.normalizedDeps[i];
-      var depEntry = defined[depName];
-      var depModule = moduleRecords[depName];
-
-      // work out how to set depExports based on scenarios...
-      var depExports;
-
-      if (depModule) {
-        depExports = depModule.exports;
-      }
-      else if (depEntry && !depEntry.declarative) {
-        depExports = depEntry.esModule;
-      }
-      // in the module registry
-      else if (!depEntry) {
-        depExports = load(depName);
-      }
-      // we have an entry -> link
-      else {
-        linkDeclarativeModule(depEntry);
-        depModule = depEntry.module;
-        depExports = depModule.exports;
-      }
-
-      // only declarative modules have dynamic bindings
-      if (depModule && depModule.importers) {
-        depModule.importers.push(module);
-        module.dependencies.push(depModule);
-      }
-      else
-        module.dependencies.push(null);
-
-      // run the setter for this dependency
-      if (module.setters[i])
-        module.setters[i](depExports);
-    }
-  }
-
-  // An analog to loader.get covering execution of all three layers (real declarative, simulated declarative, simulated dynamic)
-  function getModule(name) {
-    var exports;
-    var entry = defined[name];
-
-    if (!entry) {
-      exports = load(name);
-      if (!exports)
-        throw new Error("Unable to load dependency " + name + ".");
-    }
-
-    else {
-      if (entry.declarative)
-        ensureEvaluated(name, []);
-
-      else if (!entry.evaluated)
-        linkDynamicModule(entry);
-
-      exports = entry.module.exports;
-    }
-
-    if ((!entry || entry.declarative) && exports && exports.__useDefault)
-      return exports['default'];
-
-    return exports;
-  }
-
-  function linkDynamicModule(entry) {
-    if (entry.module)
-      return;
-
-    var exports = {};
-
-    var module = entry.module = { exports: exports, id: entry.name };
-
-    // AMD requires execute the tree first
-    if (!entry.executingRequire) {
-      for (var i = 0, l = entry.normalizedDeps.length; i < l; i++) {
-        var depName = entry.normalizedDeps[i];
-        var depEntry = defined[depName];
-        if (depEntry)
-          linkDynamicModule(depEntry);
-      }
-    }
-
-    // now execute
-    entry.evaluated = true;
-    var output = entry.execute.call(global, function(name) {
-      for (var i = 0, l = entry.deps.length; i < l; i++) {
-        if (entry.deps[i] != name)
-          continue;
-        return getModule(entry.normalizedDeps[i]);
-      }
-      throw new TypeError('Module ' + name + ' not declared as a dependency.');
-    }, exports, module);
-
-    if (output)
-      module.exports = output;
-
-    // create the esModule object, which allows ES6 named imports of dynamics
-    exports = module.exports;
- 
-    if (exports && exports.__esModule) {
-      entry.esModule = exports;
-    }
-    else {
-      entry.esModule = {};
-      
-      // don't trigger getters/setters in environments that support them
-      if ((typeof exports == 'object' || typeof exports == 'function') && exports !== global) {
-        if (getOwnPropertyDescriptor) {
-          var d;
-          for (var p in exports)
-            if (d = Object.getOwnPropertyDescriptor(exports, p))
-              defineProperty(entry.esModule, p, d);
-        }
-        else {
-          var hasOwnProperty = exports && exports.hasOwnProperty;
-          for (var p in exports) {
-            if (!hasOwnProperty || exports.hasOwnProperty(p))
-              entry.esModule[p] = exports[p];
-          }
-         }
-       }
-      entry.esModule['default'] = exports;
-      defineProperty(entry.esModule, '__useDefault', {
-        value: true
-      });
-    }
-  }
-
-  /*
-   * Given a module, and the list of modules for this current branch,
-   *  ensure that each of the dependencies of this module is evaluated
-   *  (unless one is a circular dependency already in the list of seen
-   *  modules, in which case we execute it)
-   *
-   * Then we evaluate the module itself depth-first left to right 
-   * execution to match ES6 modules
-   */
-  function ensureEvaluated(moduleName, seen) {
-    var entry = defined[moduleName];
-
-    // if already seen, that means it's an already-evaluated non circular dependency
-    if (!entry || entry.evaluated || !entry.declarative)
-      return;
-
-    // this only applies to declarative modules which late-execute
-
-    seen.push(moduleName);
-
-    for (var i = 0, l = entry.normalizedDeps.length; i < l; i++) {
-      var depName = entry.normalizedDeps[i];
-      if (indexOf.call(seen, depName) == -1) {
-        if (!defined[depName])
-          load(depName);
-        else
-          ensureEvaluated(depName, seen);
-      }
-    }
-
-    if (entry.evaluated)
-      return;
-
-    entry.evaluated = true;
-    entry.module.execute.call(global);
-  }
-
-  // magical execution function
-  var modules = {};
-  function load(name) {
-    if (modules[name])
-      return modules[name];
-
-    // node core modules
-    if (name.substr(0, 6) == '@node/')
-      return require(name.substr(6));
-
-    var entry = defined[name];
-
-    // first we check if this module has already been defined in the registry
-    if (!entry)
-      throw "Module " + name + " not present.";
-
-    // recursively ensure that the module and all its 
-    // dependencies are linked (with dependency group handling)
-    link(name);
-
-    // now handle dependency execution in correct order
-    ensureEvaluated(name, []);
-
-    // remove from the registry
-    defined[name] = undefined;
-
-    // exported modules get __esModule defined for interop
-    if (entry.declarative)
-      defineProperty(entry.module.exports, '__esModule', { value: true });
-
-    // return the defined module object
-    return modules[name] = entry.declarative ? entry.module.exports : entry.esModule;
-  };
-
-  return function(mains, depNames, declare) {
-    return function(formatDetect) {
-      formatDetect(function(deps) {
-        var System = {
-          _nodeRequire: typeof require != 'undefined' && require.resolve && typeof process != 'undefined' && require,
-          register: register,
-          registerDynamic: registerDynamic,
-          get: load, 
-          set: function(name, module) {
-            modules[name] = module; 
-          },
-          newModule: function(module) {
-            return module;
-          }
-        };
-        System.set('@empty', {});
-
-        // register external dependencies
-        for (var i = 0; i < depNames.length; i++) (function(depName, dep) {
-          if (dep && dep.__esModule)
-            System.register(depName, [], function(_export) {
-              return {
-                setters: [],
-                execute: function() {
-                  for (var p in dep)
-                    if (p != '__esModule' && !(typeof p == 'object' && p + '' == 'Module'))
-                      _export(p, dep[p]);
-                }
-              };
-            });
-          else
-            System.registerDynamic(depName, [], false, function() {
-              return dep;
-            });
-        })(depNames[i], arguments[i]);
-
-        // register modules in this bundle
-        declare(System);
-
-        // load mains
-        var firstLoad = load(mains[0]);
-        if (mains.length > 1)
-          for (var i = 1; i < mains.length; i++)
-            load(mains[i]);
-
-        if (firstLoad.__useDefault)
-          return firstLoad['default'];
-        else
-          return firstLoad;
-      });
-    };
-  };
-
-})(typeof self != 'undefined' ? self : global)
-/* (['mainModule'], ['external-dep'], function($__System) {
-  System.register(...);
-})
-(function(factory) {
-  if (typeof define && define.amd)
-    define(['external-dep'], factory);
-  // etc UMD / module pattern
-})*/
+!function(e){function r(e,r,o){return 4===arguments.length?t.apply(this,arguments):void n(e,{declarative:!0,deps:r,declare:o})}function t(e,r,t,o){n(e,{declarative:!1,deps:r,executingRequire:t,execute:o})}function n(e,r){r.name=e,e in p||(p[e]=r),r.normalizedDeps=r.deps}function o(e,r){if(r[e.groupIndex]=r[e.groupIndex]||[],-1==v.call(r[e.groupIndex],e)){r[e.groupIndex].push(e);for(var t=0,n=e.normalizedDeps.length;n>t;t++){var a=e.normalizedDeps[t],u=p[a];if(u&&!u.evaluated){var d=e.groupIndex+(u.declarative!=e.declarative);if(void 0===u.groupIndex||u.groupIndex<d){if(void 0!==u.groupIndex&&(r[u.groupIndex].splice(v.call(r[u.groupIndex],u),1),0==r[u.groupIndex].length))throw new TypeError("Mixed dependency cycle detected");u.groupIndex=d}o(u,r)}}}}function a(e){var r=p[e];r.groupIndex=0;var t=[];o(r,t);for(var n=!!r.declarative==t.length%2,a=t.length-1;a>=0;a--){for(var u=t[a],i=0;i<u.length;i++){var s=u[i];n?d(s):l(s)}n=!n}}function u(e){return x[e]||(x[e]={name:e,dependencies:[],exports:{},importers:[]})}function d(r){if(!r.module){var t=r.module=u(r.name),n=r.module.exports,o=r.declare.call(e,function(e,r){if(t.locked=!0,"object"==typeof e)for(var o in e)n[o]=e[o];else n[e]=r;for(var a=0,u=t.importers.length;u>a;a++){var d=t.importers[a];if(!d.locked)for(var i=0;i<d.dependencies.length;++i)d.dependencies[i]===t&&d.setters[i](n)}return t.locked=!1,r},r.name);t.setters=o.setters,t.execute=o.execute;for(var a=0,i=r.normalizedDeps.length;i>a;a++){var l,s=r.normalizedDeps[a],c=p[s],v=x[s];v?l=v.exports:c&&!c.declarative?l=c.esModule:c?(d(c),v=c.module,l=v.exports):l=f(s),v&&v.importers?(v.importers.push(t),t.dependencies.push(v)):t.dependencies.push(null),t.setters[a]&&t.setters[a](l)}}}function i(e){var r,t=p[e];if(t)t.declarative?c(e,[]):t.evaluated||l(t),r=t.module.exports;else if(r=f(e),!r)throw new Error("Unable to load dependency "+e+".");return(!t||t.declarative)&&r&&r.__useDefault?r["default"]:r}function l(r){if(!r.module){var t={},n=r.module={exports:t,id:r.name};if(!r.executingRequire)for(var o=0,a=r.normalizedDeps.length;a>o;o++){var u=r.normalizedDeps[o],d=p[u];d&&l(d)}r.evaluated=!0;var c=r.execute.call(e,function(e){for(var t=0,n=r.deps.length;n>t;t++)if(r.deps[t]==e)return i(r.normalizedDeps[t]);throw new TypeError("Module "+e+" not declared as a dependency.")},t,n);c&&(n.exports=c),t=n.exports,t&&t.__esModule?r.esModule=t:r.esModule=s(t)}}function s(r){if(r===e)return r;var t={};if("object"==typeof r||"function"==typeof r)if(g){var n;for(var o in r)(n=Object.getOwnPropertyDescriptor(r,o))&&h(t,o,n)}else{var a=r&&r.hasOwnProperty;for(var o in r)(!a||r.hasOwnProperty(o))&&(t[o]=r[o])}return t["default"]=r,h(t,"__useDefault",{value:!0}),t}function c(r,t){var n=p[r];if(n&&!n.evaluated&&n.declarative){t.push(r);for(var o=0,a=n.normalizedDeps.length;a>o;o++){var u=n.normalizedDeps[o];-1==v.call(t,u)&&(p[u]?c(u,t):f(u))}n.evaluated||(n.evaluated=!0,n.module.execute.call(e))}}function f(e){if(D[e])return D[e];if("@node/"==e.substr(0,6))return y(e.substr(6));var r=p[e];if(!r)throw"Module "+e+" not present.";return a(e),c(e,[]),p[e]=void 0,r.declarative&&h(r.module.exports,"__esModule",{value:!0}),D[e]=r.declarative?r.module.exports:r.esModule}var p={},v=Array.prototype.indexOf||function(e){for(var r=0,t=this.length;t>r;r++)if(this[r]===e)return r;return-1},g=!0;try{Object.getOwnPropertyDescriptor({a:0},"a")}catch(m){g=!1}var h;!function(){try{Object.defineProperty({},"a",{})&&(h=Object.defineProperty)}catch(e){h=function(e,r,t){try{e[r]=t.value||t.get.call(e)}catch(n){}}}}();var x={},y="undefined"!=typeof System&&System._nodeRequire||"undefined"!=typeof require&&require.resolve&&"undefined"!=typeof process&&require,D={"@empty":{}};return function(e,n,o){return function(a){a(function(a){for(var u={_nodeRequire:y,register:r,registerDynamic:t,get:f,set:function(e,r){D[e]=r},newModule:function(e){return e}},d=0;d<n.length;d++)(function(e,r){r&&r.__esModule?D[e]=r:D[e]=s(r)})(n[d],arguments[d]);o(u);var i=f(e[0]);if(e.length>1)for(var d=1;d<e.length;d++)f(e[d]);return i.__useDefault?i["default"]:i})}}}("undefined"!=typeof self?self:global)
 
 (["1"], [], function($__System) {
 
-(function(__global) {
-  var loader = $__System;
-  var hasOwnProperty = Object.prototype.hasOwnProperty;
-  var indexOf = Array.prototype.indexOf || function(item) {
-    for (var i = 0, l = this.length; i < l; i++)
-      if (this[i] === item)
-        return i;
-    return -1;
-  }
-
-  function readMemberExpression(p, value) {
-    var pParts = p.split('.');
-    while (pParts.length)
-      value = value[pParts.shift()];
-    return value;
-  }
-
-  // bare minimum ignores for IE8
-  var ignoredGlobalProps = ['_g', 'sessionStorage', 'localStorage', 'clipboardData', 'frames', 'frameElement', 'external', 'mozAnimationStartTime', 'webkitStorageInfo', 'webkitIndexedDB'];
-
-  var globalSnapshot;
-
-  function forEachGlobal(callback) {
-    if (Object.keys)
-      Object.keys(__global).forEach(callback);
-    else
-      for (var g in __global) {
-        if (!hasOwnProperty.call(__global, g))
-          continue;
-        callback(g);
-      }
-  }
-
-  function forEachGlobalValue(callback) {
-    forEachGlobal(function(globalName) {
-      if (indexOf.call(ignoredGlobalProps, globalName) != -1)
-        return;
-      try {
-        var value = __global[globalName];
-      }
-      catch (e) {
-        ignoredGlobalProps.push(globalName);
-      }
-      callback(globalName, value);
-    });
-  }
-
-  loader.set('@@global-helpers', loader.newModule({
-    prepareGlobal: function(moduleName, exportName, globals) {
-      // disable module detection
-      var curDefine = __global.define;
-       
-      __global.define = undefined;
-      __global.exports = undefined;
-      if (__global.module && __global.module.exports)
-        __global.module = undefined;
-
-      // set globals
-      var oldGlobals;
-      if (globals) {
-        oldGlobals = {};
-        for (var g in globals) {
-          oldGlobals[g] = __global[g];
-          __global[g] = globals[g];
-        }
-      }
-
-      // store a complete copy of the global object in order to detect changes
-      if (!exportName) {
-        globalSnapshot = {};
-
-        forEachGlobalValue(function(name, value) {
-          globalSnapshot[name] = value;
-        });
-      }
-
-      // return function to retrieve global
-      return function() {
-        var globalValue;
-
-        if (exportName) {
-          globalValue = readMemberExpression(exportName, __global);
-        }
-        else {
-          var singleGlobal;
-          var multipleExports;
-          var exports = {};
-
-          forEachGlobalValue(function(name, value) {
-            if (globalSnapshot[name] === value)
-              return;
-            if (typeof value == 'undefined')
-              return;
-            exports[name] = value;
-
-            if (typeof singleGlobal != 'undefined') {
-              if (!multipleExports && singleGlobal !== value)
-                multipleExports = true;
-            }
-            else {
-              singleGlobal = value;
-            }
-          });
-          globalValue = multipleExports ? exports : singleGlobal;
-        }
-
-        // revert globals
-        if (oldGlobals) {
-          for (var g in oldGlobals)
-            __global[g] = oldGlobals[g];
-        }
-        __global.define = curDefine;
-
-        return globalValue;
-      };
-    }
-  }));
-
-})(typeof self != 'undefined' ? self : global);
-
-(function() {
-  var loader = $__System;
-  
-  if (typeof window != 'undefined' && typeof document != 'undefined' && window.location)
-    var windowOrigin = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
-
-  loader.set('@@cjs-helpers', loader.newModule({
-    getPathVars: function(moduleId) {
-      // remove any plugin syntax
-      var pluginIndex = moduleId.lastIndexOf('!');
-      var filename;
-      if (pluginIndex != -1)
-        filename = moduleId.substr(0, pluginIndex);
-      else
-        filename = moduleId;
-
-      var dirname = filename.split('/');
-      dirname.pop();
-      dirname = dirname.join('/');
-
-      if (filename.substr(0, 8) == 'file:///') {
-        filename = filename.substr(7);
-        dirname = dirname.substr(7);
-
-        // on windows remove leading '/'
-        if (isWindows) {
-          filename = filename.substr(1);
-          dirname = dirname.substr(1);
-        }
-      }
-      else if (windowOrigin && filename.substr(0, windowOrigin.length) === windowOrigin) {
-        filename = filename.substr(windowOrigin.length);
-        dirname = dirname.substr(windowOrigin.length);
-      }
-
-      return {
-        filename: filename,
-        dirname: dirname
-      };
-    }
-  }));
-})();
-
+!function(e){function r(e,r){for(var n=e.split(".");n.length;)r=r[n.shift()];return r}function n(n){if("string"==typeof n)return r(n,e);if(!(n instanceof Array))throw new Error("Global exports must be a string or array.");for(var t={},o=!0,f=0;f<n.length;f++){var i=r(n[f],e);o&&(t["default"]=i,o=!1),t[n[f].split(".").pop()]=i}return t}function t(r){if(Object.keys)Object.keys(e).forEach(r);else for(var n in e)a.call(e,n)&&r(n)}function o(r){t(function(n){if(-1==l.call(s,n)){try{var t=e[n]}catch(o){s.push(n)}r(n,t)}})}var f,i=$__System,a=Object.prototype.hasOwnProperty,l=Array.prototype.indexOf||function(e){for(var r=0,n=this.length;n>r;r++)if(this[r]===e)return r;return-1},s=["_g","sessionStorage","localStorage","clipboardData","frames","frameElement","external","mozAnimationStartTime","webkitStorageInfo","webkitIndexedDB","mozInnerScreenY","mozInnerScreenX"];i.set("@@global-helpers",i.newModule({prepareGlobal:function(r,t,i){var a=e.define;e.define=void 0;var l;if(i){l={};for(var s in i)l[s]=e[s],e[s]=i[s]}return t||(f={},o(function(e,r){f[e]=r})),function(){var r;if(t)r=n(t);else{r={};var i,s;o(function(e,n){f[e]!==n&&"undefined"!=typeof n&&(r[e]=n,"undefined"!=typeof i?s||i===n||(s=!0):i=n)}),r=s?r:i}if(l)for(var u in l)e[u]=l[u];return e.define=a,r}}}))}("undefined"!=typeof self?self:global);
 $__System.registerDynamic("2", ["3", "4", "5"], true, function($__require, exports, module) {
   "use strict";
   ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
+  var define,
+      global = this,
+      GLOBAL = this;
   var environment = $__require('3'),
       emitter = $__require('4'),
       ConnexionEvent = $__require('5');
@@ -804,16 +198,15 @@ $__System.registerDynamic("2", ["3", "4", "5"], true, function($__require, expor
   } else {
     channel.attachMessageHandlers();
   }
-  global.define = __define;
   return module.exports;
 });
 
 $__System.registerDynamic("6", [], true, function($__require, exports, module) {
   "use strict";
   ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
+  var define,
+      global = this,
+      GLOBAL = this;
   var stack = [],
       ids = {},
       idCounter = 0,
@@ -877,16 +270,15 @@ $__System.registerDynamic("6", [], true, function($__require, exports, module) {
       cancelTask();
     }
   };
-  global.define = __define;
   return module.exports;
 });
 
 $__System.registerDynamic("5", [], true, function($__require, exports, module) {
   "use strict";
   ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
+  var define,
+      global = this,
+      GLOBAL = this;
   var ConnexionEvent = function(origin) {
     this.emitter = origin && origin.emitter || '';
     this.scope = origin && origin.scope || '';
@@ -902,18 +294,16 @@ $__System.registerDynamic("5", [], true, function($__require, exports, module) {
   };
   ConnexionEvent.key = Math.round(Math.random() * Math.pow(10, 15));
   module.exports = ConnexionEvent;
-  global.define = __define;
   return module.exports;
 });
 
 $__System.registerDynamic("3", [], true, function($__require, exports, module) {
   ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var $__pathVars = $__System.get('@@cjs-helpers').getPathVars(module.id),
-      __filename = $__pathVars.filename,
-      __dirname = $__pathVars.dirname;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var __filename = 'environment.js',
+      __dirname = '';
   (function(self, nodeGlobal, browserWindow, undefined) {
     'use strict';
     var window = self.window || browserWindow || {},
@@ -927,16 +317,15 @@ $__System.registerDynamic("3", [], true, function($__require, exports, module) {
     exports.isNodeJs = isNodeJs;
     exports.undefined = undefined;
   }(this, (typeof global !== 'undefined') ? global : null, (typeof window !== 'undefined') ? window : null));
-  global.define = __define;
   return module.exports;
 });
 
 $__System.registerDynamic("7", [], true, function($__require, exports, module) {
   "use strict";
   ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
+  var define,
+      global = this,
+      GLOBAL = this;
   var Observable = function(initialValue) {
     this.value = initialValue;
     this.observers = [];
@@ -973,12 +362,11 @@ $__System.registerDynamic("7", [], true, function($__require, exports, module) {
     return this;
   };
   module.exports = Observable;
-  global.define = __define;
   return module.exports;
 });
 
-$__System.registerDynamic("8", [], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = $__System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
+$__System.registerDynamic("8", [], false, function($__require, $__exports, $__module) {
+  var _retrieveGlobal = $__System.get("@@global-helpers").prepareGlobal($__module.id, null, null);
   (function() {
     (function(e) {
       function f(a, c) {
@@ -1121,9 +509,9 @@ $__System.registerDynamic("8", [], false, function(__require, __exports, __modul
 $__System.registerDynamic("4", ["6", "5", "3", "7", "8"], true, function($__require, exports, module) {
   "use strict";
   ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
+  var define,
+      global = this,
+      GLOBAL = this;
   var setAsyncTask = $__require('6').setAsync,
       ConnexionEvent = $__require('5'),
       environment = $__require('3'),
@@ -1285,16 +673,15 @@ $__System.registerDynamic("4", ["6", "5", "3", "7", "8"], true, function($__requ
     return this;
   };
   module.exports = new Emitter();
-  global.define = __define;
   return module.exports;
 });
 
 $__System.registerDynamic("1", ["2", "3", "4"], true, function($__require, exports, module) {
   "use strict";
   ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
+  var define,
+      global = this,
+      GLOBAL = this;
   'format cjs';
   var connexion = exports;
   connexion.version = '0.4.0';
@@ -1318,7 +705,6 @@ $__System.registerDynamic("1", ["2", "3", "4"], true, function($__require, expor
     return this;
   };
   DOMWindow.connexion = connexion;
-  global.define = __define;
   return module.exports;
 });
 
@@ -1326,6 +712,8 @@ $__System.registerDynamic("1", ["2", "3", "4"], true, function($__require, expor
 (function(factory) {
   if (typeof define == 'function' && define.amd)
     define([], factory);
+  else if (typeof module == 'object' && module.exports && typeof require == 'function')
+    module.exports = factory();
   else
     factory();
 });

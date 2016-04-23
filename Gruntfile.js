@@ -17,7 +17,6 @@ module.exports = function (grunt) {
 					jshintrc: '.jshintrc'
 				},
 				src: [
-					'src/libs/polyfills.js',
 					'src/*.js'
 				]
 			}
@@ -25,7 +24,6 @@ module.exports = function (grunt) {
 		watch: {
 			sources: {
 				files: [
-					'src/libs/polyfills.js',
 					'src/**/*.js',
                     'test/**/*.js'
 				],
@@ -53,7 +51,7 @@ module.exports = function (grunt) {
 				options: {
 					//polyfills: [''],
 					vendor: [
-						'./node_modules/systemjs/dist/system.src.js'
+						'./node_modules/systemjs-builder/node_modules/systemjs/dist/system.src.js'
 					],
 					//helpers: [''],
 					keepRunner: false,
@@ -69,7 +67,7 @@ module.exports = function (grunt) {
 				options: {
 					baseURL: SRC_DIR,
 					type: 'sfx', //sfx, bundle
-					format: 'amd',
+					format: 'umd',
 					config: 'system.config.js',
 					minify: false,
 					sourceMaps: true
@@ -81,7 +79,7 @@ module.exports = function (grunt) {
 				options: {
 					baseURL: SRC_DIR,
 					type: 'sfx', //sfx, bundle
-					format: 'amd',
+					format: 'umd',
 					config: 'system.config.js',
 					minify: true,
 					sourceMaps: true
@@ -91,10 +89,10 @@ module.exports = function (grunt) {
 				src:  TEST_DIR + '/spec.js',
 				dest: TEST_DIR + '/test.js',
 				options: {
-					baseURL: './',
+					baseURL: TEST_DIR,
 					type: 'sfx', //sfx, bundle
-					format: 'amd',
-					config: 'system.test.config.js'
+					format: 'umd',
+					config: 'system.config.js'
 				}
 			}
 		}

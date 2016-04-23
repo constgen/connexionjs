@@ -30,23 +30,46 @@ module.exports = function (grunt) {
 			options.config
 		);
 
-		//Fix paths in config. They will become relative to builder root
-		Object.keys(builder.loader.paths).forEach(function (pathAlias) {
-			var relativePath = path.resolve(options.baseURL, builder.loader.paths[pathAlias])
-			var relativeUrl = './' + path.relative('./', relativePath).replace(/\\/g, '/');
-			builder.loader.paths[pathAlias] = relativeUrl;
-			//console.log(relativeUrl);
-		});
+		//Fix paths in config. They  become relative to builder root
+		if (builder.loader.paths){
+			Object.keys(builder.loader.paths).forEach(function(pathAlias) {
+				var absolutePath = path.resolve(options.baseURL, builder.loader.paths[pathAlias]);
+				var relativeUrl = './' + path.relative('./', absolutePath).replace(/\\/g, '/');
+				builder.loader.paths[pathAlias] = relativeUrl;
+			});
+		}
 
+		//Fix packages in config. They  become relative to builder root
+		//if (builder.loader.packages) {
+		//	Object.keys(builder.loader.packages).forEach(function(pathAlias) {
+		//		var absolutePath = pathAlias.replace(/^file:(\/)+/, '');
+		//		var relativeUrl = './' + path.relative('./', absolutePath).replace(/\\/g, '/');
+		//		absolutePath = path.resolve(options.baseURL, relativeUrl);
+		//		var absoluteUrl = 'file:///' + absolutePath.replace(/\\/g, '/');
+		//		//relativeUrl = './' + path.relative('./', absolutePath).replace(/\\/g, '/');
+		//		builder.loader.packages[absoluteUrl] = builder.loader.packages[pathAlias];
+		//		delete builder.loader.packages[pathAlias];
+		//	});
+		//}
+
+
+		//resolve src. Make path relative to baseURL because of strange behaviour of System Builder
+		if (taskConfig.src instanceof Array) {
+			taskConfig.src = taskConfig.src.map(function (src) {
+				return path.relative(options.baseURL, src); 
+			}).join(' + ');
+		}
+		else {
+			taskConfig.src = path.relative(options.baseURL, taskConfig.src);
+		}
+		
 		function build(params) {
 			switch (params.buildType) {
 				case 'sfx':
 					return builder.buildStatic(params.src, params.dest, params.buildConfig);
 				case 'bundle':
-					return builder.bundle(params.src, params.dest, params.buildConfig);
-				case 'package':
 				default:
-					return builder.build(params.src, params.dest, params.buildConfig);
+					return builder.bundle(params.src, params.dest, params.buildConfig);
 			}
 		}
 
@@ -59,7 +82,7 @@ module.exports = function (grunt) {
 			.then(function () {
 				//builder.config();
 				return build({
-					src: path.relative(options.baseURL, taskConfig.src), //makre path relative to baseURL because of strange behaviour of System Builder
+					src: taskConfig.src, 
 					dest: taskConfig.dest, 
 					buildType: options.type,
 					buildConfig: {
@@ -67,7 +90,7 @@ module.exports = function (grunt) {
 						minify: Boolean(options.minify),
 						mangle: Boolean(options.mangle),
 						sourceMaps: Boolean(options.sourceMaps)
-						//sourceRoot: '' ????
+						//sourceRoot: options.baseURL
 					}
 				});
 			})

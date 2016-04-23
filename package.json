@@ -17,7 +17,6 @@
 		"messaging"
 	],
 	"dependencies": {
-		"systemjs": "0.19.9",
 		"es6-collections": "^0.5.5"
 	},
 	"devDependencies": {
@@ -27,7 +26,7 @@
 		"jasmine-core": "2.2.0",
 		"grunt-contrib-jasmine": "latest",
 		"grunt-contrib-clean": "^0.6.0",
-		"systemjs-builder": "0.14.15"
+		"systemjs-builder": "0.15.15"
 	},
 	"scripts": {
 		"test": "grunt test",
