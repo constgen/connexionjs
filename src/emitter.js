@@ -9,9 +9,6 @@ var setAsyncTask = require('./asynctask.js').setAsync,
 
 function createObserver(callback) {
 	var observer = function (event) {
-		if (event.isCanceled) {
-			return; //EXIT
-		}
 		callback(event.detail, event);
 	};
 	observer.callback = callback;

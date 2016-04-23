@@ -25,9 +25,6 @@ describe('event', function () {
 		it('emitter', function () {
 			expect(event.emitter).toBe('')
 		})
-		it('isCanceled', function () {
-			expect(event.isCanceled).toBe(false)
-		})
 		it('type', function () {
 			expect(event.type).toBe('*')
 		})
@@ -49,9 +46,6 @@ describe('event', function () {
 		it('emitter', function () {
 			expect(event.emitter).toBe(message.emitter)
 		})
-		it('isCanceled', function () {
-			expect(event.isCanceled).toBe(false)
-		})
 		it('type', function () {
 			expect(event.type).toBe(message.type)
 		})
@@ -66,13 +60,5 @@ describe('event', function () {
 			expect(event.key).toEqual(ConnexionEvent.key)
 		})
 	})
-
-	it('can be canceled', function () {
-		var event = new ConnexionEvent();
-		event.cancel()
-
-		expect(event.isCanceled).toBe(true)
-	});
-
-});
+})
 
