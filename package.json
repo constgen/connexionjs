@@ -1,7 +1,7 @@
 {
 	"name": "connexionjs",
 	"description": "Event emitter library",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"license": "MIT",
 	"author": "constgen",
 	"main": "src/index.js",
@@ -26,7 +26,8 @@
 		"jasmine-core": "2.2.0",
 		"grunt-contrib-jasmine": "1.0.3",
 		"grunt-contrib-clean": "^0.6.0",
-		"systemjs-builder": "0.15.15"
+		"systemjs-builder": "0.15.15",
+		"systemjs-plugin-json": "0.1.0"
 	},
 	"scripts": {
 		"test": "grunt test",

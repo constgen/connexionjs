@@ -1,7 +1,7 @@
 ﻿'use strict';
 
-var connexion = require('../../src/index.js');
-	//packageManifest = require('../../package.json');
+var connexion = require('../../src/index.js'),
+	packageManifest = require('../../package.json');
 
 describe('connexion', function () {
 	describe('has a correct interface', function () {
@@ -17,7 +17,7 @@ describe('connexion', function () {
 		it('"emit" is a Function', function () {
 			expect(connexion.emit).toEqual(jasmine.any(Function))
 		})
-		xit('"version" is the same as in the package.json', function () {
+		it('"version" is the same as in the package.json', function () {
 			expect(connexion.version).toEqual(packageManifest.version)
 		})
 	})

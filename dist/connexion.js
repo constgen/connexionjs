@@ -282,15 +282,11 @@ $__System.registerDynamic("5", [], true, function($__require, exports, module) {
   var ConnexionEvent = function(origin) {
     this.emitter = origin && origin.emitter || '';
     this.scope = origin && origin.scope || '';
-    this.isCanceled = false;
     this.type = (origin && origin.type) || '*';
     this.timeStamp = (origin && ('timeStamp' in origin)) ? origin.timeStamp : new Date().getTime();
     this.detail = origin && origin.detail;
     this.detail = (this.detail && typeof this.detail === 'object') ? this.detail : {};
     this.key = ConnexionEvent.key;
-  };
-  ConnexionEvent.prototype.cancel = function() {
-    this.isCanceled = true;
   };
   ConnexionEvent.key = Math.round(Math.random() * Math.pow(10, 15));
   module.exports = ConnexionEvent;
@@ -520,9 +516,6 @@ $__System.registerDynamic("4", ["6", "5", "3", "7", "8"], true, function($__requ
       isNodeJs = environment.isNodeJs;
   function createObserver(callback) {
     var observer = function(event) {
-      if (event.isCanceled) {
-        return;
-      }
       callback(event.detail, event);
     };
     observer.callback = callback;
@@ -683,7 +676,7 @@ $__System.registerDynamic("1", ["2", "3", "4"], true, function($__require, expor
       GLOBAL = this;
   'format cjs';
   var connexion = exports;
-  connexion.version = '0.4.0';
+  connexion.version = '0.4.1';
   connexion.chanel = $__require('2');
   var DOMWindow = $__require('3').window,
       emitter = $__require('4');
