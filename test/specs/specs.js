@@ -6,6 +6,6 @@ describe('Module', function () {
 	//require('./environment.js');
 	require('./event.js');
 	//require('./index.js');
-	require('./promise.js');
+	//require('./promise.js');
 	require('./stream.js');
 });

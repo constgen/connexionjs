@@ -1047,7 +1047,9 @@ $__System.registerDynamic("6", [], true, function($__require, exports, module) {
       new Promise(function(resolve, reject) {
         implementation = {reject: reject};
         resolve();
-      }).then(callback);
+      }).then(callback).catch(function(err) {
+        console.error(err);
+      });
     };
     cancelTask = function() {
       implementation.reject();
@@ -2147,7 +2149,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       scheduleMethod = function(action) {
         var id = nextHandle++;
         tasksByHandle[id] = action;
-        root.postMessage(MSG_PREFIX + currentId, '*');
+        root.postMessage(MSG_PREFIX + id, '*');
         return id;
       };
     } else if (!!root.MessageChannel) {
@@ -2761,54 +2763,6 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
   }(ObservableBase));
   Enumerable.prototype.catchError = function() {
     return new CatchErrorObservable(this);
-  };
-  Enumerable.prototype.catchErrorWhen = function(notificationHandler) {
-    var sources = this;
-    return new AnonymousObservable(function(o) {
-      var exceptions = new Subject(),
-          notifier = new Subject(),
-          handled = notificationHandler(exceptions),
-          notificationDisposable = handled.subscribe(notifier);
-      var e = sources[$iterator$]();
-      var state = {isDisposed: false},
-          lastError,
-          subscription = new SerialDisposable();
-      var cancelable = currentThreadScheduler.scheduleRecursive(null, function(_, self) {
-        if (state.isDisposed) {
-          return;
-        }
-        var currentItem = tryCatch(e.next).call(e);
-        if (currentItem === errorObj) {
-          return o.onError(currentItem.e);
-        }
-        if (currentItem.done) {
-          if (lastError) {
-            o.onError(lastError);
-          } else {
-            o.onCompleted();
-          }
-          return;
-        }
-        var currentValue = currentItem.value;
-        isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));
-        var outer = new SingleAssignmentDisposable();
-        var inner = new SingleAssignmentDisposable();
-        subscription.setDisposable(new BinaryDisposable(inner, outer));
-        outer.setDisposable(currentValue.subscribe(function(x) {
-          o.onNext(x);
-        }, function(exn) {
-          inner.setDisposable(notifier.subscribe(self, function(ex) {
-            o.onError(ex);
-          }, function() {
-            o.onCompleted();
-          }));
-          exceptions.onNext(exn);
-        }, function() {
-          o.onCompleted();
-        }));
-      });
-      return new NAryDisposable([notificationDisposable, subscription, cancelable, new IsDisposedDisposable(state)]);
-    });
   };
   var RepeatEnumerable = (function(__super__) {
     inherits(RepeatEnumerable, __super__);
@@ -4479,8 +4433,157 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
   observableProto.retry = function(retryCount) {
     return enumerableRepeat(this, retryCount).catchError();
   };
+  function repeat(value) {
+    return {'@@iterator': function() {
+        return {next: function() {
+            return {
+              done: false,
+              value: value
+            };
+          }};
+      }};
+  }
+  var RetryWhenObservable = (function(__super__) {
+    function createDisposable(state) {
+      return {
+        isDisposed: false,
+        dispose: function() {
+          if (!this.isDisposed) {
+            this.isDisposed = true;
+            state.isDisposed = true;
+          }
+        }
+      };
+    }
+    function RetryWhenObservable(source, notifier) {
+      this.source = source;
+      this._notifier = notifier;
+      __super__.call(this);
+    }
+    inherits(RetryWhenObservable, __super__);
+    RetryWhenObservable.prototype.subscribeCore = function(o) {
+      var exceptions = new Subject(),
+          notifier = new Subject(),
+          handled = this._notifier(exceptions),
+          notificationDisposable = handled.subscribe(notifier);
+      var e = this.source['@@iterator']();
+      var state = {isDisposed: false},
+          lastError,
+          subscription = new SerialDisposable();
+      var cancelable = currentThreadScheduler.scheduleRecursive(null, function(_, recurse) {
+        if (state.isDisposed) {
+          return;
+        }
+        var currentItem = e.next();
+        if (currentItem.done) {
+          if (lastError) {
+            o.onError(lastError);
+          } else {
+            o.onCompleted();
+          }
+          return;
+        }
+        var currentValue = currentItem.value;
+        isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));
+        var outer = new SingleAssignmentDisposable();
+        var inner = new SingleAssignmentDisposable();
+        subscription.setDisposable(new BinaryDisposable(inner, outer));
+        outer.setDisposable(currentValue.subscribe(function(x) {
+          o.onNext(x);
+        }, function(exn) {
+          inner.setDisposable(notifier.subscribe(recurse, function(ex) {
+            o.onError(ex);
+          }, function() {
+            o.onCompleted();
+          }));
+          exceptions.onNext(exn);
+          outer.dispose();
+        }, function() {
+          o.onCompleted();
+        }));
+      });
+      return new NAryDisposable([notificationDisposable, subscription, cancelable, createDisposable(state)]);
+    };
+    return RetryWhenObservable;
+  }(ObservableBase));
   observableProto.retryWhen = function(notifier) {
-    return enumerableRepeat(this).catchErrorWhen(notifier);
+    return new RetryWhenObservable(repeat(this), notifier);
+  };
+  function repeat(value) {
+    return {'@@iterator': function() {
+        return {next: function() {
+            return {
+              done: false,
+              value: value
+            };
+          }};
+      }};
+  }
+  var RepeatWhenObservable = (function(__super__) {
+    function createDisposable(state) {
+      return {
+        isDisposed: false,
+        dispose: function() {
+          if (!this.isDisposed) {
+            this.isDisposed = true;
+            state.isDisposed = true;
+          }
+        }
+      };
+    }
+    function RepeatWhenObservable(source, notifier) {
+      this.source = source;
+      this._notifier = notifier;
+      __super__.call(this);
+    }
+    inherits(RepeatWhenObservable, __super__);
+    RepeatWhenObservable.prototype.subscribeCore = function(o) {
+      var completions = new Subject(),
+          notifier = new Subject(),
+          handled = this._notifier(completions),
+          notificationDisposable = handled.subscribe(notifier);
+      var e = this.source['@@iterator']();
+      var state = {isDisposed: false},
+          lastError,
+          subscription = new SerialDisposable();
+      var cancelable = currentThreadScheduler.scheduleRecursive(null, function(_, recurse) {
+        if (state.isDisposed) {
+          return;
+        }
+        var currentItem = e.next();
+        if (currentItem.done) {
+          if (lastError) {
+            o.onError(lastError);
+          } else {
+            o.onCompleted();
+          }
+          return;
+        }
+        var currentValue = currentItem.value;
+        isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));
+        var outer = new SingleAssignmentDisposable();
+        var inner = new SingleAssignmentDisposable();
+        subscription.setDisposable(new BinaryDisposable(inner, outer));
+        outer.setDisposable(currentValue.subscribe(function(x) {
+          o.onNext(x);
+        }, function(exn) {
+          o.onError(exn);
+        }, function() {
+          inner.setDisposable(notifier.subscribe(recurse, function(ex) {
+            o.onError(ex);
+          }, function() {
+            o.onCompleted();
+          }));
+          completions.onNext(null);
+          outer.dispose();
+        }));
+      });
+      return new NAryDisposable([notificationDisposable, subscription, cancelable, createDisposable(state)]);
+    };
+    return RepeatWhenObservable;
+  }(ObservableBase));
+  observableProto.repeatWhen = function(notifier) {
+    return new RepeatWhenObservable(repeat(this), notifier);
   };
   var ScanObservable = (function(__super__) {
     inherits(ScanObservable, __super__);
@@ -5117,6 +5220,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
     EventPatternDisposable.prototype.dispose = function() {
       if (!this.isDisposed) {
         isFunction(this._del) && this._del(this._fn, this._ret);
+        this.isDisposed = true;
       }
     };
     return EventPatternObservable;
@@ -5347,7 +5451,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       return _observableTimer(dueTime, scheduler);
     }
     if (dueTime instanceof Date && period !== undefined) {
-      return observableTimerDateAndPeriod(dueTime.getTime(), periodOrScheduler, scheduler);
+      return observableTimerDateAndPeriod(dueTime, periodOrScheduler, scheduler);
     }
     return observableTimerTimeSpanAndPeriod(dueTime, period, scheduler);
   };
@@ -5477,7 +5581,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
         }, start));
       }
       return new BinaryDisposable(subscription, delays);
-    }, this);
+    }, source);
   }
   observableProto.delay = function() {
     var firstArg = arguments[0];
@@ -5503,15 +5607,14 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
     }
     DebounceObservable.prototype.subscribeCore = function(o) {
       var cancelable = new SerialDisposable();
-      return new BinaryDisposable(this.source.subscribe(new DebounceObserver(o, this.source, this._dt, this._s, cancelable)), cancelable);
+      return new BinaryDisposable(this.source.subscribe(new DebounceObserver(o, this._dt, this._s, cancelable)), cancelable);
     };
     return DebounceObservable;
   }(ObservableBase));
   var DebounceObserver = (function(__super__) {
     inherits(DebounceObserver, __super__);
-    function DebounceObserver(observer, source, dueTime, scheduler, cancelable) {
+    function DebounceObserver(observer, dueTime, scheduler, cancelable) {
       this._o = observer;
-      this._s = source;
       this._d = dueTime;
       this._scheduler = scheduler;
       this._c = cancelable;
@@ -5519,6 +5622,10 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       this._hv = false;
       this._id = 0;
       __super__.call(this);
+    }
+    function scheduleFuture(s, state) {
+      state.self._hv && state.self._id === state.currentId && state.self._o.onNext(state.x);
+      state.self._hv = false;
     }
     DebounceObserver.prototype.next = function(x) {
       this._hv = true;
@@ -5636,36 +5743,72 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
     isScheduler(scheduler) || (scheduler = defaultScheduler);
     return new TimestampObservable(this, scheduler);
   };
-  function sampleObservable(source, sampler) {
-    return new AnonymousObservable(function(o) {
-      var atEnd = false,
-          value,
-          hasValue = false;
-      function sampleSubscribe() {
-        if (hasValue) {
-          hasValue = false;
-          o.onNext(value);
-        }
-        atEnd && o.onCompleted();
+  var SampleObservable = (function(__super__) {
+    inherits(SampleObservable, __super__);
+    function SampleObservable(source, sampler) {
+      this.source = source;
+      this._sampler = sampler;
+      __super__.call(this);
+    }
+    SampleObservable.prototype.subscribeCore = function(o) {
+      var state = {
+        o: o,
+        atEnd: false,
+        value: null,
+        hasValue: false,
+        sourceSubscription: new SingleAssignmentDisposable()
+      };
+      state.sourceSubscription.setDisposable(this.source.subscribe(new SampleSourceObserver(state)));
+      return new BinaryDisposable(state.sourceSubscription, this._sampler.subscribe(new SamplerObserver(state)));
+    };
+    return SampleObservable;
+  }(ObservableBase));
+  var SamplerObserver = (function(__super__) {
+    inherits(SamplerObserver, __super__);
+    function SamplerObserver(s) {
+      this._s = s;
+      __super__.call(this);
+    }
+    SamplerObserver.prototype._handleMessage = function() {
+      if (this._s.hasValue) {
+        this._s.hasValue = false;
+        this._s.o.onNext(this._s.value);
       }
-      var sourceSubscription = new SingleAssignmentDisposable();
-      sourceSubscription.setDisposable(source.subscribe(function(newValue) {
-        hasValue = true;
-        value = newValue;
-      }, function(e) {
-        o.onError(e);
-      }, function() {
-        atEnd = true;
-        sourceSubscription.dispose();
-      }));
-      return new BinaryDisposable(sourceSubscription, sampler.subscribe(sampleSubscribe, function(e) {
-        o.onError(e);
-      }, sampleSubscribe));
-    }, source);
-  }
-  observableProto.sample = observableProto.throttleLatest = function(intervalOrSampler, scheduler) {
+      this._s.atEnd && this._s.o.onCompleted();
+    };
+    SamplerObserver.prototype.next = function() {
+      this._handleMessage();
+    };
+    SamplerObserver.prototype.error = function(e) {
+      this._s.onError(e);
+    };
+    SamplerObserver.prototype.completed = function() {
+      this._handleMessage();
+    };
+    return SamplerObserver;
+  }(AbstractObserver));
+  var SampleSourceObserver = (function(__super__) {
+    inherits(SampleSourceObserver, __super__);
+    function SampleSourceObserver(s) {
+      this._s = s;
+      __super__.call(this);
+    }
+    SampleSourceObserver.prototype.next = function(x) {
+      this._s.hasValue = true;
+      this._s.value = x;
+    };
+    SampleSourceObserver.prototype.error = function(e) {
+      this._s.o.onError(e);
+    };
+    SampleSourceObserver.prototype.completed = function() {
+      this._s.atEnd = true;
+      this._s.sourceSubscription.dispose();
+    };
+    return SampleSourceObserver;
+  }(AbstractObserver));
+  observableProto.sample = function(intervalOrSampler, scheduler) {
     isScheduler(scheduler) || (scheduler = defaultScheduler);
-    return typeof intervalOrSampler === 'number' ? sampleObservable(this, observableinterval(intervalOrSampler, scheduler)) : sampleObservable(this, intervalOrSampler);
+    return typeof intervalOrSampler === 'number' ? new SampleObservable(this, observableinterval(intervalOrSampler, scheduler)) : new SampleObservable(this, intervalOrSampler);
   };
   var TimeoutError = Rx.TimeoutError = function(message) {
     this.message = message || 'Timeout has occurred';
@@ -6220,6 +6363,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
         return disposableEmpty;
       },
       hasObservers: function() {
+        checkDisposed(this);
         return this.observers.length > 0;
       },
       onCompleted: function() {
@@ -6408,6 +6552,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
         return this.value;
       },
       hasObservers: function() {
+        checkDisposed(this);
         return this.observers.length > 0;
       },
       onCompleted: function() {
@@ -6500,6 +6645,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
         return subscription;
       },
       hasObservers: function() {
+        checkDisposed(this);
         return this.observers.length > 0;
       },
       _trim: function(now) {
@@ -6973,7 +7119,7 @@ $__System.registerDynamic("1", ["2", "3", "4"], true, function($__require, expor
   global.define = undefined;
   'format cjs';
   var connexion = exports;
-  connexion.version = '0.3.0';
+  connexion.version = '0.3.1';
   connexion.chanel = $__require('2');
   var DOMWindow = $__require('3').window,
       emitter = $__require('4');

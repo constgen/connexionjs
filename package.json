@@ -17,7 +17,7 @@
 		"messaging"
 	],
 	"dependencies": {
-		"systemjs": "latest",
+		"systemjs": "0.19.9",
 		"rx-lite": "^4.0.7",
 		"rx-core-binding": "^4.0.7",
 		"rx-core": "^4.0.7",
@@ -29,7 +29,7 @@
 		"grunt-jsdoc": "latest",
 		"grunt-contrib-jasmine": "latest",
 		"grunt-contrib-clean": "^0.6.0",
-		"systemjs-builder": "latest"
+		"systemjs-builder": "0.14.15"
 	},
 	"scripts": {
 		"test": "grunt test",
