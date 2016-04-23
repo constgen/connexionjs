@@ -20,17 +20,21 @@
 		"es6-collections": "^0.5.5"
 	},
 	"devDependencies": {
-		"grunt-contrib-jshint": "latest",
-		"grunt-contrib-watch": "latest",
-		"grunt-jsdoc": "latest",
+		"grunt-contrib-jshint": "1.0.0",
+		"grunt-contrib-watch": "1.0.0",
+		"grunt-jsdoc": "1.0.0",
 		"jasmine-core": "2.2.0",
-		"grunt-contrib-jasmine": "latest",
+		"grunt-contrib-jasmine": "1.0.3",
 		"grunt-contrib-clean": "^0.6.0",
 		"systemjs-builder": "0.15.15"
 	},
 	"scripts": {
 		"test": "grunt test",
 		"start": "grunt build",
-		"prepublish": "npm install && grunt test && grunt build"
+		"prepublish": "grunt test && grunt build"
+	},
+	"engines" : { 
+		"node" : ">=0.10.0",
+		"npm" : "*" 
 	}
 }
