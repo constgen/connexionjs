@@ -17,7 +17,7 @@ if (typeof Promise !== 'undefined') { //use microtask
 			resolve();
 		})
 		.then(callback)
-		.catch(function(err) {
+		['catch'](function(err) {
 			console.error(err);
 		});
 	};

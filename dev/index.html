@@ -23,7 +23,7 @@
 	<button>Add iframe 3</button>
 
 	<script>
-		System.import('../src/index.js').then(function (connexion) {
+		System['import']('../src/index.js').then(function (connexion) {
 			window.connexion = connexion;
 
 			connexion.emit('index-event', {action: 'index'})

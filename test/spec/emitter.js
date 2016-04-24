@@ -1,7 +1,7 @@
 ﻿'use strict';
 
 var emitter = require('../../src/emitter.js'),
-	Event = require('../../src/event.js'),
+	ConnexionEvent = require('../../src/event.js'),
 	Observable = require('../../src/observable.js');
 
 describe('event emitter', function () {
@@ -66,7 +66,7 @@ describe('event emitter', function () {
 	describe('method', function () {
 		it('emit() returns event object', function () {
 			var result = emitter.emit(topic1);
-			expect(result).toEqual(jasmine.any(Event))
+			expect(result).toEqual(jasmine.any(ConnexionEvent))
 		})
 		it('listen() returns observer', function () {
 			var result = emitter.listen(topic1, callback.handler1);
@@ -139,12 +139,12 @@ describe('event emitter', function () {
 		emitter.emit(topic1, data1)
 
 		wait(function () {
-			expect(callback.handler1.calls.mostRecent().args[1]).toEqual(jasmine.any(Event))
+			expect(callback.handler1.calls.mostRecent().args[1]).toEqual(jasmine.any(ConnexionEvent))
 			expect(callback.handler1.calls.mostRecent().args[1]).toEqual(jasmine.objectContaining({
 				type: topic1,
 				detail: data1
 			}))
-			expect(callback.handler2.calls.mostRecent().args[1]).toEqual(jasmine.any(Event))
+			expect(callback.handler2.calls.mostRecent().args[1]).toEqual(jasmine.any(ConnexionEvent))
 			expect(callback.handler2.calls.mostRecent().args[1]).toEqual(jasmine.objectContaining({
 				type: topic1,
 				detail: data1

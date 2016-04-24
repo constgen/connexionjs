@@ -18,7 +18,11 @@
 		(function(){
 			var currentWindowOnload = window.onload;
 			window.onload = function() {
-				System.import('./spec.js').then(currentWindowOnload);
+				System['import']('./spec.js')
+					.then(currentWindowOnload)
+					['catch'](function(err){
+						console.error(err)
+					});
 			};
 		}());
 	</script>

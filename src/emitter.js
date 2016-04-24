@@ -3,8 +3,6 @@ var setAsyncTask = require('./asynctask.js').setAsync,
 	ConnexionEvent = require('./event.js'),
 	environment = require('./environment.js'),
 	Observable = require('./observable.js'),
-	es6collections = require('es6-collections'),
-	WeakMap = es6collections.WeakMap || environment.global.WeakMap,
 	isNodeJs = environment.isNodeJs;
 
 function createObserver(callback) {
