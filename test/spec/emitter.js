@@ -233,6 +233,64 @@ describe('event emitter', function () {
 		})
 	})
 
+	it('can listen once', function(done){
+		emitter.listen.once(topic1, callback.handler1)
+		emitter.listen.once(topic1, callback.handler2)
+		emitter.listen.once(topic2, callback.handler3)
+		emitter.emit(topic1)
+		emitter.emit(topic2)
+		emitter.emit(topic1)
+		emitter.emit(topic2)
+
+		wait(function () {
+			expect(callback.handler1.calls.count()).toEqual(1)
+			expect(callback.handler2.calls.count()).toEqual(1)
+			expect(callback.handler3.calls.count()).toEqual(1)
+		})
+		wait(done)
+	})
+
+	it('can observe once', function(done){
+		emitter.observe.once(topic1, callback.handler1)
+		emitter.observe.once(topic1, callback.handler2)
+		emitter.observe.once(topic2, callback.handler3)
+		emitter.emit(topic1)
+		emitter.emit(topic2)
+		emitter.emit(topic1)
+		emitter.emit(topic2)
+
+		wait(function () {
+			expect(callback.handler1.calls.count()).toEqual(1)
+			expect(callback.handler2.calls.count()).toEqual(1)
+			expect(callback.handler3.calls.count()).toEqual(1)
+		})
+		wait(done)
+	})
+
+	it('can listen twice', function(done){
+		emitter.listen.once(topic1, callback.handler1)
+		emitter.listen.once(topic1, callback.handler1)
+		emitter.emit(topic1)
+		emitter.emit(topic1)
+
+		wait(function () {
+			expect(callback.handler1.calls.count()).toEqual(2)
+		})
+		wait(done)
+	})
+
+	it('can observe twice', function(done){
+		emitter.observe.once(topic1, callback.handler1)
+		emitter.observe.once(topic1, callback.handler1)
+		emitter.emit(topic1)
+		emitter.emit(topic1)
+
+		wait(function () {
+			expect(callback.handler1.calls.count()).toEqual(2)
+		})
+		wait(done)
+	})
+
 	describe('can unsubscribe', function () {
 		it('all subscriptions before the first emitment', function (done) {
 			emitter.listen(topic1, callback.handler1)
@@ -342,10 +400,10 @@ describe('event emitter', function () {
 			emitter.emit(topic1, data2)
 
 			wait(function () {
-				expect(callback.handler1.calls.count()).toEqual(1)
+				expect(callback.handler1.calls.count()).toEqual(0)
 				expect(callback.handler2.calls.count()).toEqual(2)
-				done()
 			})
+			wait(done)
 		})
 
 		it('one observer after the first emitment', function (done) {
@@ -356,7 +414,7 @@ describe('event emitter', function () {
 			emitter.emit(topic1, data2)
 
 			wait(function () {
-				expect(callback.handler1.calls.count()).toEqual(2)
+				expect(callback.handler1.calls.count()).toEqual(1)
 				expect(callback.handler2.calls.count()).toEqual(3)
 				done()
 			})
@@ -379,7 +437,7 @@ describe('event emitter', function () {
 		})
 	})
 
-	it('calls handlers in correct way', function (done) {
+	it('calls handlers in a correct order', function (done) {
 		var calls = [];
 		callback.handler1.and.callFake(function () {
 			calls.push('callback1')

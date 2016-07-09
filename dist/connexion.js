@@ -710,7 +710,26 @@ $__System.registerDynamic("9", [], true, function($__require, exports, module) {
   return module.exports;
 });
 
-$__System.registerDynamic("6", ["8", "7", "5", "9"], true, function($__require, exports, module) {
+$__System.registerDynamic("a", ["6"], true, function($__require, exports, module) {
+  "use strict";
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var emitter;
+  function once(eventType, handler) {
+    emitter = emitter || $__require('6');
+    var observer = this.call(emitter, eventType, handler);
+    this.call(emitter, eventType, function unsubscriber() {
+      emitter.unsubscribe(eventType, unsubscriber);
+      emitter.unsubscribe(eventType, observer);
+    });
+  }
+  module.exports = once;
+  return module.exports;
+});
+
+$__System.registerDynamic("6", ["8", "7", "5", "9", "a"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -720,6 +739,7 @@ $__System.registerDynamic("6", ["8", "7", "5", "9"], true, function($__require, 
       ConnexionEvent = $__require('7'),
       environment = $__require('5'),
       Observable = $__require('9'),
+      once = $__require('a'),
       isNodeJs = environment.isNodeJs;
   function createObserver(callback) {
     var observer = function(event) {
@@ -861,7 +881,7 @@ $__System.registerDynamic("6", ["8", "7", "5", "9"], true, function($__require, 
             i = -1;
             while (++i in observers) {
               observer = observers[i];
-              setAsyncTask(subject.unsubscribe.bind(subject, observer));
+              subject.unsubscribe(observer);
               observer.callback = undefined;
             }
             listeners.delete(handler);
@@ -871,6 +891,9 @@ $__System.registerDynamic("6", ["8", "7", "5", "9"], true, function($__require, 
     }
     return this;
   };
+  Emitter.prototype.listen.once = once;
+  Emitter.prototype.observe.once = once;
+  console.log(Emitter.prototype);
   module.exports = new Emitter();
   return module.exports;
 });
@@ -895,6 +918,14 @@ $__System.registerDynamic("1", ["2", "3", "4", "5", "6"], true, function($__requ
   };
   connexion.observe = function(type, handler) {
     emitter.observe(type, handler);
+    return this;
+  };
+  connexion.listen.once = function(type, handler) {
+    emitter.listen.once(type, handler);
+    return this;
+  };
+  connexion.observe.once = function(type, handler) {
+    emitter.observe.once(type, handler);
     return this;
   };
   connexion.unsubscribe = function(type, handler) {

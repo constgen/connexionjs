@@ -1,7 +1,7 @@
 {
 	"name": "connexionjs",
 	"description": "Event emitter library",
-	"version": "0.4.2",
+	"version": "0.5.0",
 	"license": "MIT",
 	"author": "constgen",
 	"main": "src/index.js",
@@ -33,7 +33,9 @@
 	"scripts": {
 		"test": "grunt test",
 		"start": "grunt build",
-		"build": "grunt build"
+		"build": "grunt build",
+		"code": "grunt code",
+		"live": "grunt live"
 	},
 	"engines" : { 
 		"node" : ">=0.10.0",

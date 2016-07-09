@@ -10,7 +10,7 @@ var connexion = exports;
 require('./polyfills/polyfills.js');
 require('es6-collections');
 
-connexion.version = '0.4.2';
+connexion.version = '0.5.0';
 
 connexion.chanel = require('./postmessage.channel.js');
 
@@ -23,6 +23,14 @@ connexion.listen = function (type, handler) {
 };
 connexion.observe = function (type, handler) {
 	emitter.observe(type, handler);
+	return this;
+};
+connexion.listen.once = function (type, handler) {
+	emitter.listen.once(type, handler);
+	return this;
+};
+connexion.observe.once = function (type, handler) {
+	emitter.observe.once(type, handler);
 	return this;
 };
 connexion.unsubscribe = function (type, handler) {

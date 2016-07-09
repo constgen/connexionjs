@@ -3,6 +3,7 @@ var setAsyncTask = require('./asynctask.js').setAsync,
 	ConnexionEvent = require('./event.js'),
 	environment = require('./environment.js'),
 	Observable = require('./observable.js'),
+	once = require('./once.js'),
 	isNodeJs = environment.isNodeJs;
 
 function createObserver(callback) {
@@ -206,8 +207,8 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 					while (++i in observers) {
 						observer = observers[i];
 						//remove handler
-						//subject.unsubscribe(observer);
-						setAsyncTask(subject.unsubscribe.bind(subject, observer));
+						subject.unsubscribe(observer);
+						//setAsyncTask(subject.unsubscribe.bind(subject, observer));
 						observer.callback = undefined;
 					}
 					listeners.delete(handler);
@@ -220,6 +221,8 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 	return this; 
 };
 
-
+Emitter.prototype.listen.once = once;
+Emitter.prototype.observe.once = once;
+)
 //export
 module.exports = new Emitter();
