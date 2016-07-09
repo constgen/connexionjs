@@ -10,7 +10,7 @@ var connexion = exports;
 require('./polyfills/polyfills.js');
 require('es6-collections');
 
-connexion.version = '0.4.1';
+connexion.version = '0.4.2';
 
 connexion.chanel = require('./postmessage.channel.js');
 
