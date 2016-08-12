@@ -64,7 +64,8 @@ channel.sendMessage = function (connexionMessage) {
 	if (isNodeJs) {
 		channel.getCurrentNWWindow().then(function (nwWindow) {
 			browserFrames.forEach(function (win) {
-				nwWindow.eval(win.frameElement || null, 'window.postMessage(\'' + connexionMessage + '\', "' + origin + '");');
+				//.replace(/'/g, '\\\'')
+				nwWindow.eval(win.frameElement || null, 'window.postMessage(' + JSON.stringify(connexionMessage) + ', "' + origin + '");');
 			});
 		});
 	}

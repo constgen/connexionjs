@@ -223,6 +223,6 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 
 Emitter.prototype.listen.once = once;
 Emitter.prototype.observe.once = once;
-)
+
 //export
 module.exports = new Emitter();
