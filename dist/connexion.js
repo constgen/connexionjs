@@ -405,7 +405,7 @@ $__System.registerDynamic("4", ["5", "6", "7"], true, function($__require, expor
     if (isNodeJs) {
       channel.getCurrentNWWindow().then(function(nwWindow) {
         browserFrames.forEach(function(win) {
-          nwWindow.eval(win.frameElement || null, 'window.postMessage(\'' + connexionMessage + '\', "' + origin + '");');
+          nwWindow.eval(win.frameElement || null, 'window.postMessage(' + JSON.stringify(connexionMessage) + ', "' + origin + '");');
         });
       });
     } else {
@@ -893,7 +893,6 @@ $__System.registerDynamic("6", ["8", "7", "5", "9", "a"], true, function($__requ
   };
   Emitter.prototype.listen.once = once;
   Emitter.prototype.observe.once = once;
-  console.log(Emitter.prototype);
   module.exports = new Emitter();
   return module.exports;
 });
@@ -908,7 +907,7 @@ $__System.registerDynamic("1", ["2", "3", "4", "5", "6"], true, function($__requ
   var connexion = exports;
   $__require('2');
   $__require('3');
-  connexion.version = '0.4.2';
+  connexion.version = '0.5.1';
   connexion.chanel = $__require('4');
   var DOMWindow = $__require('5').window,
       emitter = $__require('6');
