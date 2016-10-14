@@ -1,8 +1,10 @@
-﻿'use strict';
+﻿'use strict'
+
 var Emitter = require('./types/event-emitter.js')
 
-var emitter = new Emitter()
+require('./postmessage.channel.js')
 
+var emitter = new Emitter()
 
 emitter.listen.once = function(eventType, handler){
 	return emitter.once(emitter.listen, eventType, handler)
@@ -10,6 +12,5 @@ emitter.listen.once = function(eventType, handler){
 emitter.observe.once = function(eventType, handler){
 	return emitter.once(emitter.listen, eventType, handler)
 }
-
 
 module.exports = emitter

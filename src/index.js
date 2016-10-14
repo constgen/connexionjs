@@ -1,7 +1,7 @@
 ﻿'format cjs';
 'use strict';
 
-var DOMWindow = require('./environment.js').window
+var window = require('./environment.js').window
 var emitter = require('./emitter.js')
 
 var GLOBAL_NAME = 'connexion'
@@ -11,8 +11,6 @@ require('./polyfills/polyfills.js');
 require('es6-collections');
 
 exports.version = '0.6.0';
-
-exports.chanel = require('./postmessage.channel.js');
 
 exports.listen = function (type, handler) {
 	emitter.listen(type, handler)
@@ -42,4 +40,4 @@ exports.emit = function (type, detail) {
 /**
  * Connexion public object.
  */
-DOMWindow[GLOBAL_NAME] = exports
+window[GLOBAL_NAME] = exports

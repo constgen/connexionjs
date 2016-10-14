@@ -1,10 +1,12 @@
 'use strict'
 
 module.exports = function (grunt) {
-	var DOC_DIR = 'doc',
-		BUILD_DIR = 'dist',
-		TEST_DIR = 'test',
-		SRC_DIR = 'src';
+	var DOC_DIR = 'doc'
+	var BUILD_DIR = 'dist'
+	var TEST_DIR = 'test'
+	var SRC_DIR = 'src'
+	var DEMO_DIR = 'demo'
+	var MODULE_FILE_NAME = 'connexion'
 
 	grunt.initConfig({
 		jshint: {
@@ -13,15 +15,18 @@ module.exports = function (grunt) {
 					jshintrc: '.jshintrc'
 				},
 				src: [
-					'src/*.js'
+					SRC_DIR + '/**/*.js'
 				]
 			}
 		},
 		watch: {
 			sources: {
 				files: [
-					'src/**/*.js',
-                    'test/**/*.js'
+					SRC_DIR + '/**/*.js',
+					SRC_DIR + '/**/*.json',
+					TEST_DIR +  '/**/*.js',
+					TEST_DIR +  '/**/*.json',
+					DEMO_DIR +  '/**/*'
 				],
 				//tasks: ['jshint'],
 				options: {
@@ -32,7 +37,7 @@ module.exports = function (grunt) {
 		},
 		jsdoc: {
 			dist: {
-				src: ['src/*.js'],
+				src: [SRC_DIR + '/index.js'],
 				dest: DOC_DIR
 			}
 		},
@@ -46,9 +51,6 @@ module.exports = function (grunt) {
 				//src: '',
 				options: {
 					//polyfills: [''],
-					vendor: [
-						'./node_modules/systemjs-builder/node_modules/systemjs/dist/system.src.js'
-					],
 					//helpers: [''],
 					keepRunner: false,
 					outfile: TEST_DIR + '/test.html',
@@ -59,24 +61,24 @@ module.exports = function (grunt) {
 		systemjs: {
 			build: {
 				src: SRC_DIR + '/index.js',
-				dest: BUILD_DIR + '/connexion.js',
+				dest: BUILD_DIR + '/' + MODULE_FILE_NAME + '.js',
 				options: {
 					baseURL: SRC_DIR,
-					type: 'sfx', //sfx, bundle
-					format: 'umd',
 					config: 'system.config.js',
+					type: 'build',
+					format: 'umd',
 					minify: false,
 					sourceMaps: true
 				}
 			},
 			buildmin: {
 				src: SRC_DIR + '/index.js',
-				dest: BUILD_DIR + '/connexion.min.js',
+				dest: BUILD_DIR + '/'+ MODULE_FILE_NAME + '.min.js',
 				options: {
 					baseURL: SRC_DIR,
-					type: 'sfx', //sfx, bundle
-					format: 'umd',
 					config: 'system.config.js',
+					type: 'build',
+					format: 'umd',
 					minify: true,
 					sourceMaps: true
 				}
@@ -86,25 +88,26 @@ module.exports = function (grunt) {
 				dest: TEST_DIR + '/test.js',
 				options: {
 					baseURL: TEST_DIR,
-					type: 'sfx', //sfx, bundle
+					config: 'system.config.js',
+					type: 'build',
 					format: 'umd',
-					config: 'system.config.js'
+					minify: false
 				}
 			}
 		}
 	});
 
-	grunt.loadNpmTasks('grunt-contrib-jshint');
-	grunt.loadNpmTasks('grunt-contrib-watch');
-	grunt.loadNpmTasks('grunt-jsdoc');
-	grunt.loadNpmTasks('grunt-contrib-clean');
-	grunt.loadNpmTasks('grunt-contrib-jasmine');
-	grunt.loadTasks('custom_modules/grunt-systemjs-bundler/tasks');
+	grunt.loadNpmTasks('grunt-contrib-jshint')
+	grunt.loadNpmTasks('grunt-contrib-watch')
+	grunt.loadNpmTasks('grunt-jsdoc')
+	grunt.loadNpmTasks('grunt-contrib-clean')
+	grunt.loadNpmTasks('grunt-contrib-jasmine')
+	grunt.loadNpmTasks('grunt-systemjs-bundler')
 
 
-	grunt.registerTask('live', ['watch']);
-	grunt.registerTask('code', ['jshint:dev']);
-	grunt.registerTask('doc', ['clean:doc', 'jsdoc']);
-	grunt.registerTask('test', ['systemjs:test', 'jasmine', 'clean:test']);
-	grunt.registerTask('build', ['clean:build', 'systemjs:build', 'systemjs:buildmin']);
+	grunt.registerTask('live', ['watch'])
+	grunt.registerTask('code', ['jshint:dev'])
+	grunt.registerTask('doc', ['clean:doc', 'jsdoc'])
+	grunt.registerTask('test', ['systemjs:test', 'jasmine', 'clean:test'])
+	grunt.registerTask('build', ['clean:build', 'systemjs:build', 'systemjs:buildmin'])
 };
