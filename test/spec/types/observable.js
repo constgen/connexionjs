@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var Observable = require('../../src/observable.js');
+var Observable = require('../../../src/types/observable.js');
 
 describe('observable', function () {
     var subject,

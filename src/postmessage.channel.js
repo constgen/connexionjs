@@ -1,7 +1,7 @@
 ﻿'use strict';
 var environment = require('./environment.js'),
 	emitter = require('./emitter.js'),
-	ConnexionEvent = require('./event.js');
+	ConnexionEvent = require('./types/event.js');
 
 var channel = exports, //exportable
 	eventKey = ConnexionEvent.key,

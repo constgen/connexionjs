@@ -1,8 +1,8 @@
 ﻿'use strict';
 
 var emitter = require('../../src/emitter.js'),
-	ConnexionEvent = require('../../src/event.js'),
-	Observable = require('../../src/observable.js');
+	ConnexionEvent = require('../../src/types/event.js'),
+	Observable = require('../../src/types/observable.js');
 
 describe('event emitter', function () {
 	var subject,

@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var ConnexionEvent = require('../../src/event.js');
+var ConnexionEvent = require('../../../src/types/event.js');
 
 describe('event', function () {
 	var message = {

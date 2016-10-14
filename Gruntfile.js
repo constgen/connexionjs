@@ -1,8 +1,4 @@
-// usage:
-// install node!!!
-// npm install -g grunt-cli
-// npm install
-// grunt
+'use strict'
 
 module.exports = function (grunt) {
 	var DOC_DIR = 'doc',
