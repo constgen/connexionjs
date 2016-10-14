@@ -16,15 +16,13 @@
 	<script src="../system.config.js"></script>
 	<script>
 		(function(){
-			var currentWindowOnload = window.onload;
+			var currentWindowOnload = window.onload
 			window.onload = function() {
-				System['import']('./spec.js')
-					.then(currentWindowOnload)
-					['catch'](function(err){
-						console.error(err)
-					});
-			};
-		}());
+				System['import']('./spec.js').then(currentWindowOnload)['catch'](function(err){
+					console.error(err)
+				})
+			}
+		}())
 	</script>
 
 	

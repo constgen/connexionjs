@@ -1,26 +1,26 @@
-﻿'use strict';
+﻿'use strict'
 
-var Observable = require('../../../src/types/observable.js');
+var Observable = require('../../../src/types/observable.js')
 
 describe('observable', function () {
-    var subject,
-		callback = {
-			handler1: function () { },
-			handler2: function () { },
-			handler3: function () { }
-		},
-		data1 = { a: 1, b: 2 },
-		data2 = { c: 3, d: 4 },
-		data3 = { e: 5, f: 6 },
-		data4 = [7,8,9],
-		data5 = undefined,
-		data6 = null,
-		data7 = true,
-		data8 = false,
-		WAIT_TIME = 10;
+	var subject
+	var callback = {
+		handler1: function () { },
+		handler2: function () { },
+		handler3: function () { }
+	}
+	var data1 = { a: 1, b: 2 }
+	var data2 = { c: 3, d: 4 }
+	var data3 = { e: 5, f: 6 }
+	var data4 = [7, 8, 9]
+	var data5 = undefined
+	var data6 = null
+	var data7 = true
+	var data8 = false
+	var WAIT_TIME = 10
 
 	function wait(callback) {
-		return setTimeout(callback, WAIT_TIME);
+		return setTimeout(callback, WAIT_TIME)
 	}
 	
     beforeEach(function(){
@@ -32,7 +32,7 @@ describe('observable', function () {
 		spyOn(subject, 'emit').and.callThrough()
 		spyOn(subject, 'observe').and.callThrough()
 		spyOn(subject, 'listen').and.callThrough()
-    });
+    })
     
     it('is a constructor', function () {
 		expect(subject).toEqual(jasmine.any(Observable))
@@ -63,12 +63,12 @@ describe('observable', function () {
 		expect(subject.value).toBeUndefined()
 	})
     
-    it('has a correct value, when passed on creation', function () {
-        var value = {test: "test"};
-        subject = new Observable(value)
-		expect(subject.value).toBe(value)
-	})
-	
+	 it('has a correct value, when passed on creation', function () {
+		 var value = { test: "test" }
+		 subject = new Observable(value)
+		 expect(subject.value).toBe(value)
+	 })
+
 	it('emits synchronously', function (done) {
 		subject.listen(callback.handler1)
 		subject.emit(data1)
@@ -193,7 +193,7 @@ describe('observable', function () {
 	})
 	
 	it('calls handlers in correct way', function () {
-		var calls = [];
+		var calls = []
 		callback.handler1.and.callFake(function () {
 			calls.push('callback1')
 		})

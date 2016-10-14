@@ -1,7 +1,7 @@
 ﻿'use strict'
 
-var connexion = require('../../src/index.js'),
-	packageManifest = require('../../package.json');
+var connexion = require('../../src/index.js')
+var packageManifest = require('../../package.json')
 
 describe('connexion', function () {
 	describe('has a correct interface', function () {

@@ -1,6 +1,6 @@
-﻿'use strict';
+﻿'use strict'
 
-var ConnexionEvent = require('../../../src/types/event.js');
+var ConnexionEvent = require('../../../src/types/event.js')
 
 describe('event', function () {
 	var message = {
@@ -13,14 +13,14 @@ describe('event', function () {
 	}
 
 	it('is a constructor', function () {
-		var defaultEvent = new ConnexionEvent();
-		var messageEvent = new ConnexionEvent(message);
+		var defaultEvent = new ConnexionEvent()
+		var messageEvent = new ConnexionEvent(message)
 		expect(defaultEvent).toEqual(jasmine.any(ConnexionEvent))
 		expect(messageEvent).toEqual(jasmine.any(ConnexionEvent))
 	})
 
 	describe('if argument is not passed, has correct property', function () {
-		var event = new ConnexionEvent();
+		var event = new ConnexionEvent()
 
 		it('emitter', function () {
 			expect(event.emitter).toBe('')
@@ -38,7 +38,7 @@ describe('event', function () {
 	})
 
 	describe('has correct values if Event is passed as argument', function () {
-		var event = new ConnexionEvent(message);
+		var event = new ConnexionEvent(message)
 
 		it('emitter', function () {
 			expect(event.emitter).toBe(message.emitter)

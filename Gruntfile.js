@@ -95,7 +95,7 @@ module.exports = function (grunt) {
 				}
 			}
 		}
-	});
+	})
 
 	grunt.loadNpmTasks('grunt-contrib-jshint')
 	grunt.loadNpmTasks('grunt-contrib-watch')
@@ -110,4 +110,4 @@ module.exports = function (grunt) {
 	grunt.registerTask('doc', ['clean:doc', 'jsdoc'])
 	grunt.registerTask('test', ['systemjs:test', 'jasmine', 'clean:test'])
 	grunt.registerTask('build', ['clean:build', 'systemjs:build', 'systemjs:buildmin'])
-};
+}

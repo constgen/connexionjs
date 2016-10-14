@@ -1,6 +1,6 @@
-﻿'use strict';
+﻿'use strict'
 
-var environment = require('../../src/environment.js');
+var environment = require('../../src/environment.js')
 
 describe('environment', function () {
 	describe('has a correct interface', function () {

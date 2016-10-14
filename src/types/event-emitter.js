@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 var setAsyncTask = require('../asynctask.js').setAsync
 var ConnexionEvent = require('./event.js')
@@ -39,7 +39,7 @@ Emitter.prototype._ensureSubjectDestroyed = function (name) {
 		this.subjects[name] = undefined
 	}
 	return subject
-};
+}
 
 /**
  * Fires event.
@@ -120,7 +120,7 @@ Emitter.prototype.subscribe = function(subscriberName, eventType, handler) {
 		subject[subscriberName](observer)
 		
 		observers = this.subscriptions[eventType].get(handler) || []
-		observers.push(observer);
+		observers.push(observer)
 		this.subscriptions[eventType].set(handler, observers)
 	}
 	return observer
@@ -133,12 +133,12 @@ Emitter.prototype.subscribe = function(subscriberName, eventType, handler) {
  * @return {Object} - Emitter object
  */
 Emitter.prototype.unsubscribe = function (eventType, handler) {
-	var listeners,
-		subject,
-		subjects,
-		observer,
-		observers,
-		i;
+	var listeners
+	var subject
+	var subjects
+	var observer
+	var observers
+	var i
 	//all listeners and all events
 	if (!eventType && !handler) {
 		subjects = this.subjects
@@ -165,7 +165,7 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 	else if (eventType && handler) {
 		subject = this.subjects[eventType]
 		//if (subject) {
-		//	subject.unsubscribe(handler);
+		//	subject.unsubscribe(handler)
 		//}
 
 
@@ -192,21 +192,21 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 			else {
 				observers = listeners.get(handler)
 				if (observers) {
-					i = -1;
+					i = -1
 					while (++i in observers) {
 						observer = observers[i]
 						//remove handler
 						subject.unsubscribe(observer)
 						observer.callback = undefined
 					}
-					listeners.delete(handler);
+					listeners.delete(handler)
 				}
 			}
 			
 		}
 		
 	}
-	return this; 
+	return this
 }
 
 Emitter.prototype.once = function(subscriber, eventType, handler){

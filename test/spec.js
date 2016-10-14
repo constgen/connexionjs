@@ -1,5 +1,5 @@
-'use strict';
-'format cjs';
+'use strict'
+
 describe('Module', function () {
 	require('./spec/index.js')
 	require('./spec/environment.js')
@@ -8,4 +8,5 @@ describe('Module', function () {
 	require('./spec/types/observable.js')
 	require('./spec/emitter.js')
 	require('./spec/utils/pojo.js')
-});
+})
+'format cjs'

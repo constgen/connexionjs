@@ -1,77 +1,77 @@
 ﻿//Internal task scheduling
-'use strict';
+'use strict'
 
 var stack = [],
 	ids = {},
 	idCounter = 0,
 	implementation,
 	createTask,
-	cancelTask = function () { };
+	cancelTask = function () { }
 
 if (typeof Promise !== 'undefined') { //use microtask
 	createTask = function (callback) {
 		new Promise(function (resolve, reject) {
 			implementation = {
 				reject: reject
-			};
-			resolve();
+			}
+			resolve()
 		})
 		.then(callback)['catch'](function(err) {
-			console.error(err);
-		});
-	};
+			console.error(err)
+		})
+	}
 	cancelTask = function () {
-		implementation.reject();
-	};
+		implementation.reject()
+	}
 }
 else {// fallback
 	createTask = function (callback) {
-		implementation = setTimeout(callback, 0);
-	};
+		implementation = setTimeout(callback, 0)
+	}
 	cancelTask = function () {
-		clearTimeout(implementation);
-	};
+		clearTimeout(implementation)
+	}
 }
 
 //export
 exports.setAsync = function (taskFunc) {
 	if (typeof taskFunc !== 'function') {
-		return;
+		return
 	}
-	var id = idCounter++;
-	ids[id] = taskFunc; //save reference to callback
+	var id = idCounter++
+	ids[id] = taskFunc //save reference to callback
 	//If already has tasks, than just add new one. Execution is already scheduled.
 	if (stack.length) {
-		stack.push(taskFunc);
+		stack.push(taskFunc)
 	}
 		//Else add first task and schedule async execution.
 	else {
-		stack.push(taskFunc);
+		stack.push(taskFunc)
 		createTask(function () {
-			var task;
+			var task
 			while (stack.length) {
-				task = stack.shift();
-				task();
+				task = stack.shift()
+				task()
 			}
-		});
+		})
 	}
-	return id;
-};
+	return id
+}
 
 exports.clearAsync = function (id) {
 	if (typeof id !== 'number' || !(id in ids) || !stack.length) {
-		return;
+		return
 	}
-	var task, i = -1;
+	var task, i = -1
 
 	while (++i in stack) {
-		task = stack[i];
+		task = stack[i]
 		if (task === ids[id]) {
-			stack.splice(i, 1);
-			delete ids[id];
+			stack.splice(i, 1)
+			delete ids[id]
 		}
 	}
 	if (!stack.length) { //cancel async operation if no functions to execute
-		cancelTask();
+		cancelTask()
 	}
-};
+}

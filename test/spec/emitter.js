@@ -1,31 +1,31 @@
-﻿'use strict';
+﻿'use strict'
 
-var emitter = require('../../src/emitter.js'),
-	ConnexionEvent = require('../../src/types/event.js'),
-	Observable = require('../../src/types/observable.js');
+var emitter = require('../../src/emitter.js')
+var ConnexionEvent = require('../../src/types/event.js')
+var Observable = require('../../src/types/observable.js')
 
 describe('event emitter', function () {
-	var subject,
-		callback = {
-			handler1: function () { },
-			handler2: function () { },
-			handler3: function () { }
-		},
-		topic1 = 'event1',
-		topic2 = 'event2',
-		topic3 = 'event3',
-		data1 = { a: 1, b: 2 },
-		data2 = { c: 3, d: 4 },
-		data3 = { e: 5, f: 6 },
-		data4 = [7, 8, 9],
-		data5 = undefined,
-		data6 = null,
-		data7 = true,
-		data8 = false,
-		WAIT_TIME = 10;
+	var subject
+	var callback = {
+		handler1: function () { },
+		handler2: function () { },
+		handler3: function () { }
+	}
+	var topic1 = 'event1'
+	var topic2 = 'event2'
+	var topic3 = 'event3'
+	var data1 = { a: 1, b: 2 }
+	var data2 = { c: 3, d: 4 }
+	var data3 = { e: 5, f: 6 }
+	var data4 = [7, 8, 9]
+	var data5 = undefined
+	var data6 = null
+	var data7 = true
+	var data8 = false
+	var WAIT_TIME = 10
 
 	function wait(callback) {
-		return setTimeout(callback, WAIT_TIME);
+		return setTimeout(callback, WAIT_TIME)
 	}
 
 	beforeEach(function () {
@@ -39,11 +39,11 @@ describe('event emitter', function () {
 	})
 
 	afterEach(function () {
-		var key;
+		var key
 		for (key in emitter.subjects) {
 			delete emitter.subjects[key]
 		}
-		for (key in	emitter.subscriptions) {
+		for (key in emitter.subscriptions) {
 			delete emitter.subscriptions[key]
 		}
 	})
@@ -65,21 +65,21 @@ describe('event emitter', function () {
 
 	describe('method', function () {
 		it('emit() returns event object', function () {
-			var result = emitter.emit(topic1);
+			var result = emitter.emit(topic1)
 			expect(result).toEqual(jasmine.any(ConnexionEvent))
 		})
 		it('listen() returns observer', function () {
-			var result = emitter.listen(topic1, callback.handler1);
+			var result = emitter.listen(topic1, callback.handler1)
 			expect(result).toEqual(jasmine.any(Function))
 			expect(result).not.toBe(callback.handler1)
 		})
 		it('observe() returns observer', function () {
-			var result = emitter.observe(topic1, callback.handler1);
+			var result = emitter.observe(topic1, callback.handler1)
 			expect(result).toEqual(jasmine.any(Function))
 			expect(result).not.toBe(callback.handler1)
 		})
 		it('unsubscribe() returns context', function () {
-			var result = emitter.unsubscribe(topic1);
+			var result = emitter.unsubscribe(topic1)
 			expect(result).toBe(emitter)
 		})
 	})
@@ -114,7 +114,7 @@ describe('event emitter', function () {
 	it('has `{}` value by default', function (done) {
 		emitter.listen(topic1, callback.handler1)
 		emitter.emit(topic1)
-		
+
 		wait(function () {
 			expect(callback.handler1.calls.mostRecent().args[0]).toEqual({})
 			done()
@@ -125,7 +125,7 @@ describe('event emitter', function () {
 		emitter.listen(topic1, callback.handler1)
 		emitter.observe(topic1, callback.handler2)
 		emitter.emit(topic1, data1)
-		
+
 		wait(function () {
 			expect(callback.handler1.calls.mostRecent().args[0]).toBe(data1)
 			expect(callback.handler2.calls.mostRecent().args[0]).toBe(data1)
@@ -233,7 +233,7 @@ describe('event emitter', function () {
 		})
 	})
 
-	it('can listen once', function(done){
+	it('can listen once', function (done) {
 		emitter.listen.once(topic1, callback.handler1)
 		emitter.listen.once(topic1, callback.handler2)
 		emitter.listen.once(topic2, callback.handler3)
@@ -250,7 +250,7 @@ describe('event emitter', function () {
 		wait(done)
 	})
 
-	it('can observe once', function(done){
+	it('can observe once', function (done) {
 		emitter.observe.once(topic1, callback.handler1)
 		emitter.observe.once(topic1, callback.handler2)
 		emitter.observe.once(topic2, callback.handler3)
@@ -267,7 +267,7 @@ describe('event emitter', function () {
 		wait(done)
 	})
 
-	it('can listen twice', function(done){
+	it('can listen twice', function (done) {
 		emitter.listen.once(topic1, callback.handler1)
 		emitter.listen.once(topic1, callback.handler1)
 		emitter.emit(topic1)
@@ -279,7 +279,7 @@ describe('event emitter', function () {
 		wait(done)
 	})
 
-	it('can observe twice', function(done){
+	it('can observe twice', function (done) {
 		emitter.observe.once(topic1, callback.handler1)
 		emitter.observe.once(topic1, callback.handler1)
 		emitter.emit(topic1)
@@ -321,7 +321,7 @@ describe('event emitter', function () {
 			emitter.emit(topic1, data3)
 			emitter.emit(topic2, data3)
 			emitter.emit(topic1, data2)
-			
+
 			wait(function () {
 				expect(callback.handler1).not.toHaveBeenCalled()
 				expect(callback.handler2.calls.count()).toEqual(1)
@@ -438,7 +438,7 @@ describe('event emitter', function () {
 	})
 
 	it('calls handlers in a correct order', function (done) {
-		var calls = [];
+		var calls = []
 		callback.handler1.and.callFake(function () {
 			calls.push('callback1')
 		})

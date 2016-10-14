@@ -1,5 +1,4 @@
-﻿'format cjs';
-'use strict';
+﻿'use strict'
 
 var window = require('./environment.js').window
 var emitter = require('./emitter.js')
@@ -7,7 +6,7 @@ require('./channel.js') //include communication channel
 
 var GLOBAL_NAME = 'connexion'
 
-exports.version = '0.6.0';
+exports.version = '0.6.0'
 
 exports.listen = function (type, handler) {
 	emitter.listen(type, handler)
