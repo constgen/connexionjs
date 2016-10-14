@@ -1,4 +1,4 @@
-﻿'use strict';
+﻿'use strict'
 
 var connexion = require('../../src/index.js'),
 	packageManifest = require('../../package.json');

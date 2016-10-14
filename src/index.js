@@ -3,12 +3,9 @@
 
 var window = require('./environment.js').window
 var emitter = require('./emitter.js')
+require('./channel.js') //include communication channel
 
 var GLOBAL_NAME = 'connexion'
-
-//include polyfills
-require('./polyfills/polyfills.js');
-require('es6-collections');
 
 exports.version = '0.6.0';
 

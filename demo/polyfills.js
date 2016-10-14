@@ -1,15 +1,5 @@
-﻿// Array forEach
-[].forEach || (Array.prototype.forEach = function(g, b) { if (this == null) { throw new TypeError("this is null or not defined") } var d, c, e, f = Object(this), a = f.length >>> 0; if ({}.toString.call(g) != "[object Function]") { throw new TypeError(g + " is not a function") } if (b) { d = b } c = 0; while (c < a) { if (c in f) { e = f[c]; g.call(d, e, c, f) } c++ } });
-// Array map
-[].map || (Array.prototype.map = function(i, h) { if (this == null) { throw new TypeError("this is null or not defined") } if ({}.toString.call(i) != "[object Function]") { throw new TypeError(i + " is not a function") } var b, a, c, d, g, f = Object(this), e = f.length >>> 0; h && (b = h); a = new Array(e); c = 0; while (c < e) { if (c in f) { d = f[c]; g = i.call(b, d, c, f); a[c] = g } c++ } return a });
-// Array filter
-[].filter || (Array.prototype.filter = function(b) { if (this == null) { throw new TypeError("this is null or not defined") } if (typeof b != "function") { throw new TypeError(b + " is not a function") } var f = Object(this), a = f.length >>> 0, e = [], d = arguments[1], c, g; for (c = 0; c < a; c++) { if (c in f) { g = f[c]; if (b.call(d, g, c, f)) { e.push(g) } } } return e });
-// Array some
-[].some || (Array.prototype.some = function(b) { if (this == null) { throw new TypeError("this is null or not defined") } if (typeof b != "function") { throw new TypeError(b + " is not a function") } var e = Object(this), a = e.length >>> 0, d = arguments[1], c; for (c = 0; c < a; c++) { if (c in e && b.call(d, e[c], c, e)) { return true } } return false });
-// Function bind
+﻿// Function bind
 (function() { }).bind || (Function.prototype.bind = function(a) { if (typeof this !== "function") { throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable") } var e = Array.prototype.slice.call(arguments, 1), d = this, b = function() { }, c = function() { return d.apply(this instanceof b && a ? this : a, e.concat(Array.prototype.slice.call(arguments))) }; b.prototype = this.prototype; c.prototype = new b(); return c });
-// Object create
-Object.create = Object.create || (function() { function F() { } return function(o) { if (arguments.length != 1) { throw new Error("Object.create implementation only accepts one parameter.") } F.prototype = o; return new F() } }());
 // Array indexOf
 if (!Array.prototype.indexOf) {
   Array.prototype.indexOf = function(searchElement, fromIndex) {

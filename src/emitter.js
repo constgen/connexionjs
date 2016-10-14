@@ -2,8 +2,6 @@
 
 var Emitter = require('./types/event-emitter.js')
 
-require('./postmessage.channel.js')
-
 var emitter = new Emitter()
 
 emitter.listen.once = function(eventType, handler){

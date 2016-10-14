@@ -1,8 +1,11 @@
 'use strict';
+
 var setAsyncTask = require('../asynctask.js').setAsync
 var ConnexionEvent = require('./event.js')
 var environment = require('../environment.js')
 var Observable = require('./observable.js')
+var pojo = require('../utils/pojo.js')
+require('es6-collections') //WeakMap polyfill
 
 var isNodeJs = environment.isNodeJs
 
@@ -15,8 +18,8 @@ function createObserver(callback) {
 }
 
 var Emitter = function () {
-	this.subjects = Object.create(null)
-	this.subscriptions = Object.create(null)
+	this.subjects = pojo()
+	this.subscriptions = pojo()
 }
 
 Emitter.prototype._ensureSubjectExists = function (name) {
@@ -138,30 +141,29 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 		i;
 	//all listeners and all events
 	if (!eventType && !handler) {
-		subjects = this.subjects;
+		subjects = this.subjects
 		for (eventType in subjects) {
-			this.unsubscribe(eventType);
+			this.unsubscribe(eventType)
 		}
 	}
 	//object variant
 	else if (typeof eventType === 'object' && eventType) {
-		listeners = eventType;
+		listeners = eventType
 		for (eventType in listeners) {
-			this.unsubscribe(eventType, listeners[eventType]);
+			this.unsubscribe(eventType, listeners[eventType])
 		}
 	}
 	//all listeners of a given event
 	else if (eventType && !handler) {
-		subject = this.subjects[eventType];
+		subject = this.subjects[eventType]
 		if (subject) {
-			subject.unsubscribe();
-			//setAsyncTask(subject.unsubscribe.bind(subject));
-			this._ensureSubjectDestroyed(eventType); //releases all subscriptions references
+			subject.unsubscribe()
+			this._ensureSubjectDestroyed(eventType) //releases all subscriptions references
 		}
 	}
 	//eventtype-handler variant
 	else if (eventType && handler) {
-		subject = this.subjects[eventType];
+		subject = this.subjects[eventType]
 		//if (subject) {
 		//	subject.unsubscribe(handler);
 		//}
@@ -169,35 +171,33 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 
 
 		
-		listeners = this.subscriptions[eventType];
+		listeners = this.subscriptions[eventType]
 		if (listeners) {
 			//if the second argument is an observer
 			if ('callback' in handler) {
-				observer = handler;
-				handler = observer.callback;
+				observer = handler
+				handler = observer.callback
 				//remove handler
-				subject.unsubscribe(observer);
-				//setAsyncTask(subject.unsubscribe.bind(subject, observer));
-				observer.callback = undefined;
+				subject.unsubscribe(observer)
+				observer.callback = undefined
 
-				observers = listeners.get(handler);
+				observers = listeners.get(handler)
 				if (observers) {
-					i = observers.indexOf(observer);
+					i = observers.indexOf(observer)
 					if (~i) {
-						observers.splice(i, 1);
+						observers.splice(i, 1)
 					}
 				}
 			}
 			else {
-				observers = listeners.get(handler);
+				observers = listeners.get(handler)
 				if (observers) {
 					i = -1;
 					while (++i in observers) {
-						observer = observers[i];
+						observer = observers[i]
 						//remove handler
-						subject.unsubscribe(observer);
-						//setAsyncTask(subject.unsubscribe.bind(subject, observer));
-						observer.callback = undefined;
+						subject.unsubscribe(observer)
+						observer.callback = undefined
 					}
 					listeners.delete(handler);
 				}
@@ -212,11 +212,11 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 Emitter.prototype.once = function(subscriber, eventType, handler){
 	var emitter = this
 	var observer = subscriber.call(emitter, eventType, handler)
-	subscriber.call(emitter, eventType, unsubscriber)
 	function unsubscriber() {
 		emitter.unsubscribe(eventType, unsubscriber)
 		emitter.unsubscribe(eventType, observer)
 	}
+	subscriber.call(emitter, eventType, unsubscriber)
 	return observer
 }
 
