@@ -1,54 +1,54 @@
 'use strict';
-var setAsyncTask = require('../asynctask.js').setAsync,
-	ConnexionEvent = require('./event.js'),
-	environment = require('../environment.js'),
-	Observable = require('./observable.js'),
-	once = require('../once.js'),
-	isNodeJs = environment.isNodeJs;
+var setAsyncTask = require('../asynctask.js').setAsync
+var ConnexionEvent = require('./event.js')
+var environment = require('../environment.js')
+var Observable = require('./observable.js')
+
+var isNodeJs = environment.isNodeJs
 
 function createObserver(callback) {
 	var observer = function (event) {
-		callback(event.detail, event);
-	};
-	observer.callback = callback;
-	return observer;
+		callback(event.detail, event)
+	}
+	observer.callback = callback
+	return observer
 }
 
 var Emitter = function () {
-	this.subjects = Object.create(null);
-	this.subscriptions = Object.create(null);
-};
+	this.subjects = Object.create(null)
+	this.subscriptions = Object.create(null)
+}
 
 Emitter.prototype._ensureSubjectExists = function (name) {
-	var subject = this.subjects[name];
+	var subject = this.subjects[name]
 	if (!subject) {
-		subject = new Observable(new ConnexionEvent({ type: name, timeStamp: 0 }));
-		this.subscriptions[name] = new WeakMap();
-		this.subjects[name] = subject;
+		subject = new Observable(new ConnexionEvent({ type: name, timeStamp: 0 }))
+		this.subscriptions[name] = new WeakMap()
+		this.subjects[name] = subject
 	}
-	return subject;
-};
+	return subject
+}
 
 Emitter.prototype._ensureSubjectDestroyed = function (name) {
-	var subject = this.subjects[name];
+	var subject = this.subjects[name]
 	if (subject) {
-		this.subscriptions[name] = undefined;
-		this.subjects[name] = undefined;
+		this.subscriptions[name] = undefined
+		this.subjects[name] = undefined
 	}
-	return subject;
+	return subject
 };
 
 /**
- * Generates global event in Core with attached details.
- * @param {String} eventType Event type.
- * @param {Object} [detail] Details.
- * @return {Object} Host object
+ * Fires event.
+ * @param {String} eventType - Event type
+ * @param {Object} [detail] - Event details
+ * @return {Object} - Fired event object
  */
 Emitter.prototype.emit = function (eventType, detail) {
-	var subject,
-		commonSubject,
-		eventData = eventType,
-		event;
+	var subject
+	var commonSubject
+	var eventData = eventType
+	var event
 
 	//string+data pair as arguments
 	if ((typeof eventType === 'string') || (eventType instanceof String)) {
@@ -57,89 +57,77 @@ Emitter.prototype.emit = function (eventType, detail) {
 			detail: detail,
 			scope: isNodeJs ? 'nodejs' : 'window',
 			emitter: isNodeJs ? 'nodejs' : (environment.global.name || '') //try to use window.name
-		});
+		})
 	}
 	//event object as argument
 	else if ((typeof eventData === 'object') && !(eventData instanceof Array)) {
-		event = new ConnexionEvent(eventData);
-		eventType = event.type;
+		event = new ConnexionEvent(eventData)
+		eventType = event.type
 	}
 
-	subject = this._ensureSubjectExists(eventType);
-	commonSubject = this._ensureSubjectExists('*');
+	subject = this._ensureSubjectExists(eventType)
+	commonSubject = this._ensureSubjectExists('*')
 
 	//async emitment
-	setAsyncTask(subject.emit.bind(subject, event));
+	setAsyncTask(subject.emit.bind(subject, event))
 
 	//async wildcard emitment
 	if (eventType !== '*') {
-		setAsyncTask(commonSubject.emit.bind(commonSubject, event));
+		setAsyncTask(commonSubject.emit.bind(commonSubject, event))
 	}
-	return event;
-};
+	return event
+}
 
 /**
- * Adds Core event listeners in runtime. This is an alternative way to add listener of Core events.
- * @param {String} eventType Event type.
- * @param {Function} handler Callback handler.
- * @return {Object} Host object
+ * Adds event listeners.
+ * @param {String} eventType - Event type
+ * @param {Function} handler - Callback handler
+ * @return {Object} - Observer object
  */
 Emitter.prototype.listen = function(eventType, handler) {
-	var listeners,
-		subject,
-		observer,
-		observers;
-	//object variant
-	if (typeof eventType === 'object' && eventType) {
-		listeners = eventType;
-		for (eventType in listeners) {
-			this.listen(eventType, listeners[eventType]);
-		}
-	}
-	//eventtype-handler variant
-	else if (eventType && handler) {
-		subject = this._ensureSubjectExists(eventType);
-		observer = createObserver(handler);
-		subject.listen(observer);
-							
-		observers = this.subscriptions[eventType].get(handler) || [];
-		observers.push(observer);
-		this.subscriptions[eventType].set(handler, observers);
-	}
-	return observer;
-};
+	return this.subscribe('listen', eventType, handler)
+}
 
 /**
- * 1
+ * Adds event observer.
+ * @param {String} eventType - Event type
+ * @param {Function} handler - Callback handler
+ * @return {Object} - Observer object
  */
 Emitter.prototype.observe = function(eventType, handler) {
-	var listeners,
-		subject,
-		observer,
-		observers;
+	return this.subscribe('observe', eventType, handler)
+}
+
+Emitter.prototype.subscribe = function(subscriberName, eventType, handler) {
+	var listeners
+	var subject
+	var observer
+	var observers
 	//object variant
 	if (typeof eventType === 'object' && eventType) {
-		listeners = eventType;
+		listeners = eventType
 		for (eventType in listeners) {
-			this.observe(eventType, listeners[eventType]);
+			this[subscriberName](eventType, listeners[eventType])
 		}
 	}
 	//eventtype-handler variant
 	else if (eventType && handler) {
-		subject = this._ensureSubjectExists(eventType);
-		//async observing
-		observer = createObserver(handler);
-		subject.observe(observer);
+		subject = this._ensureSubjectExists(eventType)
+		observer = createObserver(handler)
+		subject[subscriberName](observer)
 		
-		observers = this.subscriptions[eventType].get(handler) || [];
+		observers = this.subscriptions[eventType].get(handler) || []
 		observers.push(observer);
-		this.subscriptions[eventType].set(handler, observers);
+		this.subscriptions[eventType].set(handler, observers)
 	}
-	return observer;
-};
+	return observer
+}
 
 /**
- * 1
+ * Adds event handler.
+ * @param {String} eventType - Event type
+ * @param {Function} handler - Callback handler
+ * @return {Object} - Emitter object
  */
 Emitter.prototype.unsubscribe = function (eventType, handler) {
 	var listeners,
@@ -219,10 +207,18 @@ Emitter.prototype.unsubscribe = function (eventType, handler) {
 		
 	}
 	return this; 
-};
+}
 
-Emitter.prototype.listen.once = once;
-Emitter.prototype.observe.once = once;
+Emitter.prototype.once = function(subscriber, eventType, handler){
+	var emitter = this
+	var observer = subscriber.call(emitter, eventType, handler)
+	subscriber.call(emitter, eventType, unsubscriber)
+	function unsubscriber() {
+		emitter.unsubscribe(eventType, unsubscriber)
+		emitter.unsubscribe(eventType, observer)
+	}
+	return observer
+}
 
 //export
-module.exports = Emitter;
+module.exports = Emitter

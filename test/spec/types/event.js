@@ -35,9 +35,6 @@ describe('event', function () {
 		it('detail', function () {
 			expect(event.detail).toEqual({})
 		})
-		it('key', function () {
-			expect(event.key).toEqual(ConnexionEvent.key)
-		})
 	})
 
 	describe('has correct values if Event is passed as argument', function () {
@@ -55,9 +52,6 @@ describe('event', function () {
 		})
 		it('detail', function () {
 			expect(event.detail).toEqual(message.detail)
-		})
-		it('key', function () {
-			expect(event.key).toEqual(ConnexionEvent.key)
 		})
 	})
 })

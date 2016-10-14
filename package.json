@@ -1,9 +1,9 @@
 {
 	"name": "connexionjs",
 	"description": "Event emitter library",
-	"version": "0.5.2",
+	"version": "0.6.0",
 	"license": "MIT",
-	"author": "constgen",
+	"author": "Constantine Genchevsky",
 	"main": "src/index.js",
 	"repository": {
 		"type": "git",
@@ -39,6 +39,6 @@
 	},
 	"engines" : { 
 		"node" : ">=0.10.0",
-		"npm" : "*" 
+		"npm" : ">=3" 
 	}
 }

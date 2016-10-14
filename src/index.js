@@ -10,7 +10,7 @@ var GLOBAL_NAME = 'connexion'
 require('./polyfills/polyfills.js');
 require('es6-collections');
 
-exports.version = '0.5.2';
+exports.version = '0.6.0';
 
 exports.chanel = require('./postmessage.channel.js');
 
