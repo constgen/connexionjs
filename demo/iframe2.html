@@ -1,38 +1,33 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
+
 <head>
 	<title></title>
 	<meta charset='utf-8'>
+	<meta name="viewport" content="minimum-scale=1, width=device-width, maximum-scale=1, user-scalable=no, minimal-ui" />
 	<script>window.name = 'iframe2'</script>
-</head>
-<body>
+	<script async src="http://localhost:35729/livereload.js"></script>
 	<script src="../node_modules/systemjs/dist/system.src.js"></script>
 	<script src="../system.config.js"></script>
+	<script src="polyfills.js"></script>
+	<script src="common.js"></script>
+</head>
 
-	This is iframe2
-
-	<button data-component="push">Push</button>
-
+<body>
+	This is "iframe2"
+	<br>
+	<button type="button" class="push">Push</button>
+	<br>
 
 	<script>
-		System['import']('../src/index.js').then(function (connexion) {
-			window.connexion = connexion;
-
-
-			var button = document.querySelector('button');
-			button.onclick = function () {
-				console.log('click in iframe2')
-				connexion.emit('test-action1', { datafromIframe2: 2 })
-			}
-			connexion.emit('test-action0', { datafromIframe2: 2 })
-
-
-			connexion.listen('*', function (d, e) {
-				console.info(e.type, d, document.body) 
-			});
-		});
+		whenReady.then(function (connexion) {
+			connexion.emit('iframe2-start-event', {from: window.name})
+			connexion.listen('*', notifyListener)
+			connexion.observe('*', notifyObserver)
+		})
 	</script>
 
 
 </body>
+
 </html>
