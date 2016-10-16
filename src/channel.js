@@ -38,7 +38,7 @@ function getSubjectsData() {
 
 function setSubjectsData(messageEvent) {
 	var subjectsData = messageEvent.data
-	var eventSubjects = emitter.subjects
+	var emitterSubjects = emitter.subjects
 	var index = -1
 	var data
 	var type
@@ -51,16 +51,21 @@ function setSubjectsData(messageEvent) {
 		type = data.type
 		event = data.event
 
-		if (type === '*') { //Skip 'wildcard event' declaretion. It will be defined in local instance dinamically by another event.
-			return //EXIT
+		// skip 'wildcard event' declaretion. It will be defined in local instance dinamically by another event.
+		if (type === '*') { 
+			continue
 		}
-		//if an event is completely new or an event is later than a local event, then emit a newer event to update a value in listeners
-		else if (!(type in eventSubjects)) {
-			emitter.emit(event)
+		// if event was never fired
+		else if (!event.timeStamp) { 
+			continue
+		}
+		// if an event is completely new or an event is later than a local event, then emit a newer event to update a value in listeners
+		else if (!(type in emitterSubjects)) {
+			emitterEmit.call(emitter, event)
 		}
 		// or an event is later than a local event, then emit a newer event to update a value in listeners
 		else {
-			subject = eventSubjects[type]
+			subject = emitterSubjects[type]
 			subjectValue = subject.value
 			if (event.timeStamp > subjectValue.timeStamp) {
 				emitter.emit(event)
