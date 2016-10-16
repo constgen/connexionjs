@@ -3,263 +3,1066 @@
 (["1"], [], true, function($__System) {
 var require = this.require, exports = this.exports, module = this.module;
 !function(e){function r(e,r){for(var n=e.split(".");n.length;)r=r[n.shift()];return r}function n(n){if("string"==typeof n)return r(n,e);if(!(n instanceof Array))throw new Error("Global exports must be a string or array.");for(var t={},o=!0,f=0;f<n.length;f++){var i=r(n[f],e);o&&(t["default"]=i,o=!1),t[n[f].split(".").pop()]=i}return t}function t(r){if(Object.keys)Object.keys(e).forEach(r);else for(var n in e)a.call(e,n)&&r(n)}function o(r){t(function(n){if(-1==l.call(s,n)){try{var t=e[n]}catch(o){s.push(n)}r(n,t)}})}var f,i=$__System,a=Object.prototype.hasOwnProperty,l=Array.prototype.indexOf||function(e){for(var r=0,n=this.length;n>r;r++)if(this[r]===e)return r;return-1},s=["_g","sessionStorage","localStorage","clipboardData","frames","frameElement","external","mozAnimationStartTime","webkitStorageInfo","webkitIndexedDB","mozInnerScreenY","mozInnerScreenX"];i.set("@@global-helpers",i.newModule({prepareGlobal:function(r,t,i){var a=e.define;e.define=void 0;var l;if(i){l={};for(var s in i)l[s]=e[s],e[s]=i[s]}return t||(f={},o(function(e,r){f[e]=r})),function(){var r;if(t)r=n(t);else{r={};var i,s;o(function(e,n){f[e]!==n&&"undefined"!=typeof n&&(r[e]=n,"undefined"!=typeof i?s||i===n||(s=!0):i=n)}),r=s?r:i}if(l)for(var u in l)e[u]=l[u];return e.define=a,r}}}))}("undefined"!=typeof self?self:global);
-$__System.registerDynamic("2", [], false, function ($__require, $__exports, $__module) {
-	var _retrieveGlobal = $__System.get("@@global-helpers").prepareGlobal($__module.id, null, null);
+$__System.registerDynamic('2', [], true, function ($__require, exports, module) {
+	'use strict';
 
-	(function ($__global) {
-		// Array forEach
-		[].forEach || (Array.prototype.forEach = function (g, b) {
-			if (this == null) {
-				throw new TypeError("this is null or not defined");
-			}var d,
-			    c,
-			    e,
-			    f = Object(this),
-			    a = f.length >>> 0;if ({}.toString.call(g) != "[object Function]") {
-				throw new TypeError(g + " is not a function");
-			}if (b) {
-				d = b;
-			}c = 0;while (c < a) {
-				if (c in f) {
-					e = f[c];g.call(d, e, c, f);
-				}c++;
-			}
-		});
-		// Array map
-		[].map || (Array.prototype.map = function (i, h) {
-			if (this == null) {
-				throw new TypeError("this is null or not defined");
-			}if ({}.toString.call(i) != "[object Function]") {
-				throw new TypeError(i + " is not a function");
-			}var b,
-			    a,
-			    c,
-			    d,
-			    g,
-			    f = Object(this),
-			    e = f.length >>> 0;h && (b = h);a = new Array(e);c = 0;while (c < e) {
-				if (c in f) {
-					d = f[c];g = i.call(b, d, c, f);a[c] = g;
-				}c++;
-			}return a;
-		});
-		// Array filter
-		[].filter || (Array.prototype.filter = function (b) {
-			if (this == null) {
-				throw new TypeError("this is null or not defined");
-			}if (typeof b != "function") {
-				throw new TypeError(b + " is not a function");
-			}var f = Object(this),
-			    a = f.length >>> 0,
-			    e = [],
-			    d = arguments[1],
-			    c,
-			    g;for (c = 0; c < a; c++) {
-				if (c in f) {
-					g = f[c];if (b.call(d, g, c, f)) {
-						e.push(g);
-					}
-				}
-			}return e;
-		});
-		// Array some
-		[].some || (Array.prototype.some = function (b) {
-			if (this == null) {
-				throw new TypeError("this is null or not defined");
-			}if (typeof b != "function") {
-				throw new TypeError(b + " is not a function");
-			}var e = Object(this),
-			    a = e.length >>> 0,
-			    d = arguments[1],
-			    c;for (c = 0; c < a; c++) {
-				if (c in e && b.call(d, e[c], c, e)) {
-					return true;
-				}
-			}return false;
-		});
-		// Function bind
-		(function () {}).bind || (Function.prototype.bind = function (a) {
-			if (typeof this !== "function") {
-				throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
-			}var e = Array.prototype.slice.call(arguments, 1),
-			    d = this,
-			    b = function () {},
-			    c = function () {
-				return d.apply(this instanceof b && a ? this : a, e.concat(Array.prototype.slice.call(arguments)));
-			};b.prototype = this.prototype;c.prototype = new b();return c;
-		});
-		// Object create
-		Object.create = Object.create || function () {
-			function F() {}return function (o) {
-				if (arguments.length != 1) {
-					throw new Error("Object.create implementation only accepts one parameter.");
-				}F.prototype = o;return new F();
-			};
-		}();
-		// Array indexOf
-		if (!Array.prototype.indexOf) {
-			Array.prototype.indexOf = function (searchElement, fromIndex) {
-				var k;
-				if (this == null) {
-					throw new TypeError('"this" is null or not defined');
-				}
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var validTypes = { object: true, symbol: true };
 
-				var O = Object(this);
-				var len = O.length >>> 0;
-				if (len === 0) {
-					return -1;
-				}
-				var n = +fromIndex || 0;
-
-				if (Math.abs(n) === Infinity) {
-					n = 0;
-				}
-				if (n >= len) {
-					return -1;
-				}
-				k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-				while (k < len) {
-					if (k in O && O[k] === searchElement) {
-						return k;
-					}
-					k++;
-				}
-				return -1;
-			};
+	module.exports = function () {
+		var symbol;
+		if (typeof Symbol !== 'function') return false;
+		symbol = Symbol('test symbol');
+		try {
+			String(symbol);
+		} catch (e) {
+			return false;
 		}
 
-		//Object keys
-		if (!Object.keys) {
-			Object.keys = function () {
-				'use strict';
+		// Return 'true' also for polyfills
+		if (!validTypes[typeof Symbol.iterator]) return false;
+		if (!validTypes[typeof Symbol.toPrimitive]) return false;
+		if (!validTypes[typeof Symbol.toStringTag]) return false;
 
-				var hasOwnProperty = Object.prototype.hasOwnProperty,
-				    hasDontEnumBug = !{ toString: null }.propertyIsEnumerable('toString'),
-				    dontEnums = ['toString', 'toLocaleString', 'valueOf', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'constructor'],
-				    dontEnumsLength = dontEnums.length;
-
-				return function (obj) {
-					if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
-						throw new TypeError('Object.keys called on non-object');
-					}
-
-					var result = [],
-					    prop,
-					    i;
-
-					for (prop in obj) {
-						if (hasOwnProperty.call(obj, prop)) {
-							result.push(prop);
-						}
-					}
-
-					if (hasDontEnumBug) {
-						for (i = 0; i < dontEnumsLength; i++) {
-							if (hasOwnProperty.call(obj, dontEnums[i])) {
-								result.push(dontEnums[i]);
-							}
-						}
-					}
-					return result;
-				};
-			}();
-		}
-
-		if ('document' in this && document.documentElement && !document.documentElement.insertAdjacentHTML) {
-			HTMLElement.prototype.insertAdjacentHTML = function (position, text) {
-				var node,
-				    elem = this,
-				    htmlContainer = document.createElement('div'),
-				    docFragment = document.createDocumentFragment();
-
-				htmlContainer.innerHTML = text;
-				while (node = htmlContainer.firstChild) {
-					docFragment.appendChild(node);
-				}
-				switch (position.toLowerCase()) {
-					case 'beforebegin':
-						elem.parentNode.insertBefore(docFragment, elem);
-						break;
-					case 'afterbegin':
-						elem.insertBefore(docFragment, elem.firstChild);
-						break;
-					case 'beforeend':
-						elem.appendChild(docFragment);
-						break;
-					case 'afterend':
-						elem.parentNode.insertBefore(docFragment, elem.nextSibling);
-						break;
-				};
-			};
-		};
-	})(this);
-
-	return _retrieveGlobal();
+		return true;
+	};
+	return module.exports;
 });
-$__System.registerDynamic("3", [], false, function ($__require, $__exports, $__module) {
-  var _retrieveGlobal = $__System.get("@@global-helpers").prepareGlobal($__module.id, null, null);
+$__System.registerDynamic('3', [], true, function ($__require, exports, module) {
+	'use strict';
 
-  (function ($__global) {
-    (function (e) {
-      function f(a, c) {
-        function b(a) {
-          if (!this || this.constructor !== b) return new b(a);this._keys = [];this._values = [];this._itp = [];this.objectOnly = c;a && v.call(this, a);
-        }c || w(a, "size", { get: x });a.constructor = b;b.prototype = a;return b;
-      }function v(a) {
-        this.add ? a.forEach(this.add, this) : a.forEach(function (a) {
-          this.set(a[0], a[1]);
-        }, this);
-      }function d(a) {
-        this.has(a) && (this._keys.splice(b, 1), this._values.splice(b, 1), this._itp.forEach(function (a) {
-          b < a[0] && a[0]--;
-        }));return -1 < b;
-      }function m(a) {
-        return this.has(a) ? this._values[b] : void 0;
-      }function n(a, c) {
-        if (this.objectOnly && c !== Object(c)) throw new TypeError("Invalid value used as weak collection key");if (c != c || 0 === c) for (b = a.length; b-- && !y(a[b], c););else b = a.indexOf(c);return -1 < b;
-      }function p(a) {
-        return n.call(this, this._values, a);
-      }function q(a) {
-        return n.call(this, this._keys, a);
-      }function r(a, c) {
-        this.has(a) ? this._values[b] = c : this._values[this._keys.push(a) - 1] = c;return this;
-      }function t(a) {
-        this.has(a) || this._values.push(a);return this;
-      }function h() {
-        (this._keys || 0).length = this._values.length = 0;
-      }function z() {
-        return k(this._itp, this._keys);
-      }function l() {
-        return k(this._itp, this._values);
-      }function A() {
-        return k(this._itp, this._keys, this._values);
-      }function B() {
-        return k(this._itp, this._values, this._values);
-      }function k(a, c, b) {
-        var g = [0],
-            e = !1;a.push(g);return { next: function () {
-            var f,
-                d = g[0];!e && d < c.length ? (f = b ? [c[d], b[d]] : c[d], g[0]++) : (e = !0, a.splice(a.indexOf(g), 1));return { done: e, value: f };
-          } };
-      }function x() {
-        return this._values.length;
-      }function u(a, c) {
-        for (var b = this.entries();;) {
-          var d = b.next();if (d.done) break;
-          a.call(c, d.value[1], d.value[0], this);
-        }
-      }var b,
-          w = Object.defineProperty,
-          y = function (a, b) {
-        return isNaN(a) ? isNaN(b) : a === b;
-      };"undefined" == typeof WeakMap && (e.WeakMap = f({ "delete": d, clear: h, get: m, has: q, set: r }, !0));"undefined" != typeof Map && "function" === typeof new Map().values && new Map().values().next || (e.Map = f({ "delete": d, has: q, get: m, set: r, keys: z, values: l, entries: A, forEach: u, clear: h }));"undefined" != typeof Set && "function" === typeof new Set().values && new Set().values().next || (e.Set = f({ has: p, add: t, "delete": d, clear: h,
-        keys: l, values: l, entries: B, forEach: u }));"undefined" == typeof WeakSet && (e.WeakSet = f({ "delete": d, add: t, clear: h, has: p }, !0));
-    })("undefined" != typeof exports && "undefined" != typeof global ? global : window);
-  })(this);
-
-  return _retrieveGlobal();
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = function () {
+		var assign = Object.assign,
+		    obj;
+		if (typeof assign !== 'function') return false;
+		obj = { foo: 'raz' };
+		assign(obj, { bar: 'dwa' }, { trzy: 'trzy' });
+		return obj.foo + obj.bar + obj.trzy === 'razdwatrzy';
+	};
+	return module.exports;
 });
 $__System.registerDynamic('4', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = function () {
+		try {
+			Object.keys('primitive');
+			return true;
+		} catch (e) {
+			return false;
+		}
+	};
+	return module.exports;
+});
+$__System.registerDynamic('5', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var keys = Object.keys;
+
+	module.exports = function (object) {
+		return keys(object == null ? object : Object(object));
+	};
+	return module.exports;
+});
+$__System.registerDynamic('6', ['4', '5'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = $__require('4')() ? Object.keys : $__require('5');
+	return module.exports;
+});
+$__System.registerDynamic("7", [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = function (value) {
+		if (value == null) throw new TypeError("Cannot use null or undefined");
+		return value;
+	};
+	return module.exports;
+});
+$__System.registerDynamic('8', ['6', '7'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var keys = $__require('6'),
+	    value = $__require('7'),
+	    max = Math.max;
+
+	module.exports = function (dest, src /*, …srcn*/) {
+		var error,
+		    i,
+		    l = max(arguments.length, 2),
+		    assign;
+		dest = Object(value(dest));
+		assign = function (key) {
+			try {
+				dest[key] = src[key];
+			} catch (e) {
+				if (!error) error = e;
+			}
+		};
+		for (i = 1; i < l; ++i) {
+			src = arguments[i];
+			keys(src).forEach(assign);
+		}
+		if (error !== undefined) throw error;
+		return dest;
+	};
+	return module.exports;
+});
+$__System.registerDynamic('9', ['3', '8'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = $__require('3')() ? Object.assign : $__require('8');
+	return module.exports;
+});
+$__System.registerDynamic('a', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var forEach = Array.prototype.forEach,
+	    create = Object.create;
+
+	var process = function (src, obj) {
+		var key;
+		for (key in src) obj[key] = src[key];
+	};
+
+	module.exports = function (options /*, …options*/) {
+		var result = create(null);
+		forEach.call(arguments, function (options) {
+			if (options == null) return;
+			process(Object(options), result);
+		});
+		return result;
+	};
+	return module.exports;
+});
+$__System.registerDynamic('b', [], true, function ($__require, exports, module) {
+  // Deprecated
+
+  'use strict';
+
+  var define,
+      global = this || self,
+      GLOBAL = global;
+  module.exports = function (obj) {
+    return typeof obj === 'function';
+  };
+  return module.exports;
+});
+$__System.registerDynamic('c', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var str = 'razdwatrzy';
+
+	module.exports = function () {
+		if (typeof str.contains !== 'function') return false;
+		return str.contains('dwa') === true && str.contains('foo') === false;
+	};
+	return module.exports;
+});
+$__System.registerDynamic('d', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var indexOf = String.prototype.indexOf;
+
+	module.exports = function (searchString /*, position*/) {
+		return indexOf.call(this, searchString, arguments[1]) > -1;
+	};
+	return module.exports;
+});
+$__System.registerDynamic('e', ['c', 'd'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = $__require('c')() ? String.prototype.contains : $__require('d');
+	return module.exports;
+});
+$__System.registerDynamic('f', ['9', 'a', 'b', 'e'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var assign = $__require('9'),
+	    normalizeOpts = $__require('a'),
+	    isCallable = $__require('b'),
+	    contains = $__require('e'),
+	    d;
+
+	d = module.exports = function (dscr, value /*, options*/) {
+		var c, e, w, options, desc;
+		if (arguments.length < 2 || typeof dscr !== 'string') {
+			options = value;
+			value = dscr;
+			dscr = null;
+		} else {
+			options = arguments[2];
+		}
+		if (dscr == null) {
+			c = w = true;
+			e = false;
+		} else {
+			c = contains.call(dscr, 'c');
+			e = contains.call(dscr, 'e');
+			w = contains.call(dscr, 'w');
+		}
+
+		desc = { value: value, configurable: c, enumerable: e, writable: w };
+		return !options ? desc : assign(normalizeOpts(options), desc);
+	};
+
+	d.gs = function (dscr, get, set /*, options*/) {
+		var c, e, options, desc;
+		if (typeof dscr !== 'string') {
+			options = set;
+			set = get;
+			get = dscr;
+			dscr = null;
+		} else {
+			options = arguments[3];
+		}
+		if (get == null) {
+			get = undefined;
+		} else if (!isCallable(get)) {
+			options = get;
+			get = set = undefined;
+		} else if (set == null) {
+			set = undefined;
+		} else if (!isCallable(set)) {
+			options = set;
+			set = undefined;
+		}
+		if (dscr == null) {
+			c = true;
+			e = false;
+		} else {
+			c = contains.call(dscr, 'c');
+			e = contains.call(dscr, 'e');
+		}
+
+		desc = { get: get, set: set, configurable: c, enumerable: e };
+		return !options ? desc : assign(normalizeOpts(options), desc);
+	};
+	return module.exports;
+});
+$__System.registerDynamic('10', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = function (x) {
+		if (!x) return false;
+		if (typeof x === 'symbol') return true;
+		if (!x.constructor) return false;
+		if (x.constructor.name !== 'Symbol') return false;
+		return x[x.constructor.toStringTag] === 'Symbol';
+	};
+	return module.exports;
+});
+$__System.registerDynamic('11', ['10'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var isSymbol = $__require('10');
+
+	module.exports = function (value) {
+		if (!isSymbol(value)) throw new TypeError(value + " is not a symbol");
+		return value;
+	};
+	return module.exports;
+});
+$__System.registerDynamic('12', ['f', '11'], true, function ($__require, exports, module) {
+	// ES2015 Symbol polyfill for environments that do not support it (or partially support it)
+
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var d = $__require('f'),
+	    validateSymbol = $__require('11'),
+	    create = Object.create,
+	    defineProperties = Object.defineProperties,
+	    defineProperty = Object.defineProperty,
+	    objPrototype = Object.prototype,
+	    NativeSymbol,
+	    SymbolPolyfill,
+	    HiddenSymbol,
+	    globalSymbols = create(null),
+	    isNativeSafe;
+
+	if (typeof Symbol === 'function') {
+		NativeSymbol = Symbol;
+		try {
+			String(NativeSymbol());
+			isNativeSafe = true;
+		} catch (ignore) {}
+	}
+
+	var generateName = function () {
+		var created = create(null);
+		return function (desc) {
+			var postfix = 0,
+			    name,
+			    ie11BugWorkaround;
+			while (created[desc + (postfix || '')]) ++postfix;
+			desc += postfix || '';
+			created[desc] = true;
+			name = '@@' + desc;
+			defineProperty(objPrototype, name, d.gs(null, function (value) {
+				// For IE11 issue see:
+				// https://connect.microsoft.com/IE/feedbackdetail/view/1928508/
+				//    ie11-broken-getters-on-dom-objects
+				// https://github.com/medikoo/es6-symbol/issues/12
+				if (ie11BugWorkaround) return;
+				ie11BugWorkaround = true;
+				defineProperty(this, name, d(value));
+				ie11BugWorkaround = false;
+			}));
+			return name;
+		};
+	}();
+
+	// Internal constructor (not one exposed) for creating Symbol instances.
+	// This one is used to ensure that `someSymbol instanceof Symbol` always return false
+	HiddenSymbol = function Symbol(description) {
+		if (this instanceof HiddenSymbol) throw new TypeError('TypeError: Symbol is not a constructor');
+		return SymbolPolyfill(description);
+	};
+
+	// Exposed `Symbol` constructor
+	// (returns instances of HiddenSymbol)
+	module.exports = SymbolPolyfill = function Symbol(description) {
+		var symbol;
+		if (this instanceof Symbol) throw new TypeError('TypeError: Symbol is not a constructor');
+		if (isNativeSafe) return NativeSymbol(description);
+		symbol = create(HiddenSymbol.prototype);
+		description = description === undefined ? '' : String(description);
+		return defineProperties(symbol, {
+			__description__: d('', description),
+			__name__: d('', generateName(description))
+		});
+	};
+	defineProperties(SymbolPolyfill, {
+		for: d(function (key) {
+			if (globalSymbols[key]) return globalSymbols[key];
+			return globalSymbols[key] = SymbolPolyfill(String(key));
+		}),
+		keyFor: d(function (s) {
+			var key;
+			validateSymbol(s);
+			for (key in globalSymbols) if (globalSymbols[key] === s) return key;
+		}),
+
+		// If there's native implementation of given symbol, let's fallback to it
+		// to ensure proper interoperability with other native functions e.g. Array.from
+		hasInstance: d('', NativeSymbol && NativeSymbol.hasInstance || SymbolPolyfill('hasInstance')),
+		isConcatSpreadable: d('', NativeSymbol && NativeSymbol.isConcatSpreadable || SymbolPolyfill('isConcatSpreadable')),
+		iterator: d('', NativeSymbol && NativeSymbol.iterator || SymbolPolyfill('iterator')),
+		match: d('', NativeSymbol && NativeSymbol.match || SymbolPolyfill('match')),
+		replace: d('', NativeSymbol && NativeSymbol.replace || SymbolPolyfill('replace')),
+		search: d('', NativeSymbol && NativeSymbol.search || SymbolPolyfill('search')),
+		species: d('', NativeSymbol && NativeSymbol.species || SymbolPolyfill('species')),
+		split: d('', NativeSymbol && NativeSymbol.split || SymbolPolyfill('split')),
+		toPrimitive: d('', NativeSymbol && NativeSymbol.toPrimitive || SymbolPolyfill('toPrimitive')),
+		toStringTag: d('', NativeSymbol && NativeSymbol.toStringTag || SymbolPolyfill('toStringTag')),
+		unscopables: d('', NativeSymbol && NativeSymbol.unscopables || SymbolPolyfill('unscopables'))
+	});
+
+	// Internal tweaks for real symbol producer
+	defineProperties(HiddenSymbol.prototype, {
+		constructor: d(SymbolPolyfill),
+		toString: d('', function () {
+			return this.__name__;
+		})
+	});
+
+	// Proper implementation of methods exposed on Symbol.prototype
+	// They won't be accessible on produced symbol instances as they derive from HiddenSymbol.prototype
+	defineProperties(SymbolPolyfill.prototype, {
+		toString: d(function () {
+			return 'Symbol (' + validateSymbol(this).__description__ + ')';
+		}),
+		valueOf: d(function () {
+			return validateSymbol(this);
+		})
+	});
+	defineProperty(SymbolPolyfill.prototype, SymbolPolyfill.toPrimitive, d('', function () {
+		var symbol = validateSymbol(this);
+		if (typeof symbol === 'symbol') return symbol;
+		return symbol.toString();
+	}));
+	defineProperty(SymbolPolyfill.prototype, SymbolPolyfill.toStringTag, d('c', 'Symbol'));
+
+	// Proper implementaton of toPrimitive and toStringTag for returned symbol instances
+	defineProperty(HiddenSymbol.prototype, SymbolPolyfill.toStringTag, d('c', SymbolPolyfill.prototype[SymbolPolyfill.toStringTag]));
+
+	// Note: It's important to define `toPrimitive` as last one, as some implementations
+	// implement `toPrimitive` natively without implementing `toStringTag` (or other specified symbols)
+	// And that may invoke error in definition flow:
+	// See: https://github.com/medikoo/es6-symbol/issues/13#issuecomment-164146149
+	defineProperty(HiddenSymbol.prototype, SymbolPolyfill.toPrimitive, d('c', SymbolPolyfill.prototype[SymbolPolyfill.toPrimitive]));
+	return module.exports;
+});
+$__System.registerDynamic('13', ['2', '12'], true, function ($__require, exports, module) {
+  'use strict';
+
+  var define,
+      global = this || self,
+      GLOBAL = global;
+  module.exports = $__require('2')() ? Symbol : $__require('12');
+  return module.exports;
+});
+$__System.registerDynamic('14', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = function () {
+		return function () {};
+	};
+	return module.exports;
+});
+$__System.registerDynamic('15', ['14'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var createNoop = $__require('14');
+
+	function Handler(callback, identifier) {
+		callback = callback || createNoop();
+		if (callback[identifier]) {
+			return callback[identifier];
+		} else {
+			callback[identifier] = this;
+			this.callback = callback;
+			this.next = undefined;
+			this.prev = undefined;
+		}
+	}
+
+	Handler.prototype.call = function (event) {
+		var callback = this.callback;
+		callback(event);
+	};
+
+	module.exports = Handler;
+	return module.exports;
+});
+$__System.registerDynamic('16', ['13', '15'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var Symbol = $__require('13');
+	var Handler = $__require('15');
+
+	function HandlersCollection() {
+		this.head = new Handler();
+		this.tail = new Handler();
+		this.head.next = this.tail;
+		this.tail.prev = this.head;
+		this.identifier = Symbol();
+	}
+
+	HandlersCollection.prototype.handle = function (event) {
+		var handler = this.head.next;
+		while (handler) {
+			handler.call(event);
+			handler = handler.next;
+		}
+		//handler.call(event)
+	};
+
+	HandlersCollection.prototype.push = function (callback) {
+		var handler = new Handler(callback, this.identifier);
+		var last = this.tail.prev;
+
+		if (handler.next) {
+			//is already in collection
+			return;
+		}
+		handler.next = this.tail;
+		this.tail.prev = handler;
+		handler.prev = last;
+		last.next = handler;
+	};
+
+	HandlersCollection.prototype.remove = function (callback) {
+		var handler = new Handler(callback, this.identifier);
+		var prev = handler.prev;
+		var next = handler.next;
+
+		if (prev) {
+			prev.next = next;
+		}
+		if (next) {
+			next.prev = prev;
+		}
+	};
+
+	HandlersCollection.prototype.empty = function () {
+		this.head.next = this.tail;
+		this.tail.prev = this.head;
+	};
+
+	module.exports = HandlersCollection;
+	return module.exports;
+});
+$__System.registerDynamic('17', ['18', '19', '1a', '1b', '1c'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var MessageEvent = $__require('18');
+	var Message = $__require('19');
+	var generateRandomKey = $__require('1a');
+	var getAllChildWindows = $__require('1b');
+	var environment = $__require('1c');
+
+	var global = environment.global;
+	var window = environment.window;
+
+	/*
+ Known issues:
+ 1. Safari detection of a structured clonning support when DOM is sent. String(e.data).indexOf("Null") !== -1. See https://gist.github.com/ryanseddon/4583494
+ 2. IE8's events are triggered synchronously, which may lead to to unexpected results.
+ 3. Firefox 41 and below do not support sending File/Blob objects see bug
+ 4. Internet Explorer 8 and 9, and Firefox versions 6.0 (Opera says that 3.6) and below only support strings as postMessage's message. References: https://dev.opera.com/articles/view/window-postmessage-messagechannel/#crossdoc
+ 5. Probbaly: IE<=9 doesn't like you to call postMessage as soon as page loads. Use a setTimeout to wait one or two seconds before calling postMessage.
+ 6. IE8-11 doen't support postMessage on different tabs and origins.
+ 7. Worker structured clonning support (from MDN): Chrome >=13, Firefox >=8, IE>=10.0, Opera >=11.5, Safari>=6
+ 
+ Links:
+ * http://blogs.msdn.com/b/ieinternals/archive/2009/09/16/bugs-in-ie8-support-for-html5-postmessage-sessionstorage-and-localstorage.aspx
+ 
+ Todo:
+ 1. Add `window.open` & `window.opener` messaging
+ 
+ */
+
+	function Transport(name) {
+		this.port1 = window.top;
+		this.port2 = global;
+		this.origin = '*'; //location = window.location, location && (location.origin || (location.protocol + '//' + location.host)) || '*'
+		this.listener = null;
+		this.name = name;
+		this.key = generateRandomKey();
+	}
+
+	Transport.supported = Boolean(global.postMessage);
+	Transport.EVENT_TYPE = 'message';
+
+	Transport.prototype.send = function (data) {
+		var origin = this.origin;
+		var message = new Message(data, this);
+		var childWindows = getAllChildWindows(this.port1);
+		var index = -1;
+
+		try {
+			this.port1.postMessage(message, origin);
+			while (++index in childWindows) {
+				childWindows[index].postMessage(message, origin);
+			}
+		} catch (err) {
+			// Structured clone error
+			err.name === 'DataCloneError';
+			err.code === err.DATA_CLONE_ERR;
+
+			//API error
+			console.error(err, data);
+			//var e;
+			//e = win.document.createEvent('Event')
+			//e.initEvent(Transport.EVENT_TYPE, false, false)
+			//e.data = message
+			//e.origin = this.origin
+			//e.source = window
+			//win.dispatchEvent(e)
+		}
+	};
+
+	Transport.prototype.onMessageEvent = function (handler) {
+		var transport = this;
+		var port2 = this.port2;
+		function listener(event) {
+			var messageEvent = new MessageEvent(event);
+			if ('key' in messageEvent && 'sourceChannel' in messageEvent && transport.name === messageEvent.sourceChannel //events on the same channel
+			&& transport.key !== messageEvent.key //skip returned back events
+			) {
+					handler(messageEvent);
+				}
+		}
+		port2.removeEventListener(Transport.EVENT_TYPE, this.listener);
+		port2.addEventListener(Transport.EVENT_TYPE, listener);
+		this.listener = listener;
+	};
+
+	Transport.prototype.close = function () {
+		this.port2.removeEventListener(Transport.EVENT_TYPE, this.listener);
+		this.listener = null;
+	};
+
+	module.exports = Transport;
+	return module.exports;
+});
+$__System.registerDynamic('18', ['1c'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var environment = $__require('1c');
+
+	var window = environment.window;
+	var EventConstructor = window.MessageEvent || Object;
+
+	function MessageEvent(config) {
+		config = config || {};
+		var message = config.data || {};
+
+		// if (!message) {
+		// 	return this; //EXIT, if message is empty
+		// }
+
+		if (typeof message === 'string') {
+			try {
+				message = JSON.parse(message);
+			} catch (err) {
+				console.error(err, event);
+			}
+		}
+
+		//connextionMessageRegExp = /^__([A-Za-z]+?)__:/;
+		// connectionCretaria,
+		// connectionType,
+		// connectionMatch,
+		// data;
+
+		// //parse message without try-catch
+		// if (message && typeof message === 'string') {
+		// 	connectionMatch = message.match(connextionMessageRegExp);
+
+		// 	if (connectionMatch) {
+		// 		connectionCretaria = connectionMatch[0];
+		// 		connectionType = connectionMatch[1];
+		// 		if (connectionType === messageType) {
+		// 			data = JSON.parse(message.substr(connectionCretaria.length));
+		// 		}
+		// 	}
+		// }
+
+		Object.defineProperties(this, {
+			'data': {
+				value: message.data, //extract usefull data from a message
+				writable: false
+			},
+			'timeStamp': {
+				value: config.timeStamp || 0,
+				writable: false
+			},
+			'origin': {
+				value: config.origin || '',
+				writable: false
+			},
+			'key': {
+				value: message.key,
+				writable: false
+			},
+			'sourceChannel': {
+				value: message.sourceChannel,
+				writable: false
+			}
+		});
+	}
+
+	MessageEvent.prototype = Object.create(EventConstructor.prototype);
+	MessageEvent.prototype.constructor = MessageEvent;
+
+	module.exports = MessageEvent;
+	return module.exports;
+});
+$__System.registerDynamic('19', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	/**
+  * Message entity constructor
+  * @param {*} data - any data to be transfered
+  * @param {Object} [source] - source sent from
+  */
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	function Message(data, source) {
+		source = source || {};
+		this.data = data;
+		this.key = source.key;
+		this.sourceChannel = source.name;
+	}
+
+	// Message.prototype.toJSON = function(){
+	// 	return this
+	// }
+	Message.prototype.asJSON = function () {
+		return JSON.stringify(this);
+	};
+
+	// _createEvent = function (event) {
+	// 	return '__connexionEvent__:' + JSON.stringify(event);
+	// }
+
+	module.exports = Message;
+	return module.exports;
+});
+$__System.registerDynamic('1a', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = function generateRandomKey() {
+		return Math.round(Math.random() * Math.pow(10, 15));
+	};
+	return module.exports;
+});
+$__System.registerDynamic('1b', [], true, function ($__require, exports, module) {
+	'use strict';
+	/**
+  * Creates a collection of all child frames/iframes windows objects. Takes into a count deeper nested frames.
+  * @param [Window] topWin - Main document window, where to search child frames
+  * @returns [Array] - Array of all child windows.
+  */
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	module.exports = function getAllChildWindows(topWin) {
+		var windows = [];
+		var frames = topWin.frames;
+		var win;
+		var i = frames.length;
+
+		while (i--) {
+			win = frames[i];
+			windows.push(win);
+			//include deeper level frames
+			windows = windows.concat(getAllChildWindows(win));
+		}
+
+		return windows;
+	};
+	return module.exports;
+});
+$__System.registerDynamic('1c', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var __filename = '..\\node_modules\\cross-channel\\src\\utils\\environment.js',
+	    __dirname = '';
+	!function (self, nodeGlobal, browserWindow, undefined) {
+		var window = self.window || browserWindow || {};
+		var location = window.location || {};
+		var global = nodeGlobal || ('top' in window ? window.top.global || {} : {}); //NodeJS `global`
+
+		var isNode = 'require' in global && 'process' in global && global.global === global && typeof __dirname !== 'undefined'; //NodeJS context
+
+		//export
+		exports.window = window;
+		exports.global = global;
+		exports.location = location;
+		exports.isNode = isNode;
+		exports.undefined = undefined;
+	}(this, typeof global !== 'undefined' ? global : null, typeof window !== 'undefined' ? window : null);
+	return module.exports;
+});
+$__System.registerDynamic('1d', ['18', '19', '1a', '1b', '1c'], true, function ($__require, exports, module) {
+	'use strict';
+
+	//var Symbol = require('es6-symbol')
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var MessageEvent = $__require('18');
+	var Message = $__require('19');
+	var generateRandomKey = $__require('1a');
+	var getAllChildWindows = $__require('1b');
+	var environment = $__require('1c');
+
+	var global = environment.global;
+
+	function getGUI(window) {
+		return window && window.nwDispatcher.requireNwGui();
+	}
+
+	function whenGuiReadyThen(callback) {
+		var gui = getGUI(global.window);
+		if (gui) {
+			callback(gui);
+			return;
+		}
+		var timerId = setInterval(function () {
+			gui = getGUI(global.window);
+			if (gui) {
+				clearInterval(timerId);
+				callback(gui);
+			}
+		}, 10);
+	}
+
+	function getNWWindowThen(callback) {
+		whenGuiReadyThen(function (gui) {
+			var nwWindow = gui.Window.get();
+			callback(nwWindow);
+		});
+	}
+
+	// getNWWindowThen(function (nwWindow) {
+	// 	//listen, when new page is open
+	// 	nwWindowwin.on('loaded', function () {
+	// 		var browserWindow = global.window;
+	// 		//listen main window only once
+	// 		if (!browserWindow[omen]) {
+	// 			browserWindow[omen] = true; //mark as listened by Node
+	// 			attachMessageHandlers();
+	// 		}
+	// 	});
+	// });
+
+	function Transport(name) {
+		// this.port - computed value
+		this.origin = '*'; //location = window.location, location && (location.origin || (location.protocol + '//' + location.host)) || '*'
+		this.listener = null;
+		this.name = name;
+		this.key = generateRandomKey();
+	}
+
+	Transport.supported = Boolean(environment.isNode && global.window);
+	Transport.EVENT_TYPE = 'message';
+
+	//computed `this.port`
+	Object.defineProperty(Transport.prototype, 'port', {
+		get: function () {
+			return global.window;
+		},
+		set: function (value) {}
+	});
+
+	Transport.prototype.send = function (data) {
+		var origin = this.origin;
+		var message = new Message(data, this);
+		var browserWindow = this.port;
+		var topBrowserWindow = browserWindow.top;
+		var browserFrames = topBrowserWindow && [topBrowserWindow].concat(getAllChildWindows(topBrowserWindow)) || [];
+
+		getNWWindowThen(function (nwWindow) {
+			var index = -1;
+			while (++index in browserFrames) {
+				//.replace(/'/g, '\\\'')
+				nwWindow.eval(browserFrames[index].frameElement || null, 'window.postMessage(' + JSON.stringify(message.asJSON()) + ', "' + origin + '")');
+			}
+		});
+	};
+
+	Transport.prototype.onMessageEvent = function (handler) {
+		var transport = this;
+		var port = this.port;
+		function listener(e) {
+			var window = this;
+			var nativeMessageEventWorks = window.MessageEvent && window.MessageEvent.length;
+			var event = nativeMessageEventWorks ? new window.MessageEvent(Transport.EVENT_TYPE, e) : e; //fixes crashes in NWjs, when read `e.data`
+			var messageEvent = new MessageEvent(event);
+
+			if ('key' in messageEvent && 'sourceChannel' in messageEvent && transport.name === messageEvent.sourceChannel //events on the same channel
+			&& transport.key !== messageEvent.key //skip returned back events
+			) {
+					handler(messageEvent);
+				}
+		}
+		port.removeEventListener(Transport.EVENT_TYPE, this.listener);
+		port.addEventListener(Transport.EVENT_TYPE, listener);
+		this.listener = listener;
+	};
+
+	Transport.prototype.close = function () {
+		this.port.removeEventListener(Transport.EVENT_TYPE, this.listener);
+		this.listener = null;
+	};
+
+	module.exports = Transport;
+	return module.exports;
+});
+$__System.registerDynamic('1e', [], true, function ($__require, exports, module) {
+  'use strict';
+
+  var define,
+      global = this || self,
+      GLOBAL = global;
+  var noop = function () {};
+
+  function Transport() {}
+
+  Transport.prototype.send = noop;
+  Transport.prototype.onMessageEvent = noop;
+  Transport.prototype.close = noop;
+
+  module.exports = Transport;
+  return module.exports;
+});
+$__System.registerDynamic('1f', ['17', '1d', '1e'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var PostMessageTransport = $__require('17');
+	var NwTransport = $__require('1d');
+	var BlankTransport = $__require('1e');
+
+	var Transport;
+
+	if (NwTransport.supported) {
+		Transport = NwTransport;
+	} else if (PostMessageTransport.supported) {
+		Transport = PostMessageTransport;
+	} else {
+		Transport = BlankTransport;
+	}
+	//Transport = require('./experimental/broadcastchannel.transport.js')
+	//Transport = require('./experimental/storage.transport.js')
+	//Transport = require('./experimental/eventemitter.transport.js')
+
+	function Channel(id) {
+		Transport.call(this, id);
+	}
+
+	Channel.prototype = Object.create(Transport.prototype);
+	Channel.prototype.constructor = Channel;
+
+	module.exports = Channel;
+	return module.exports;
+});
+$__System.registerDynamic('20', ['16', '1f'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var HandlersCollection = $__require('16');
+	var Channel = $__require('1f');
+
+	function CrossChannel(name) {
+		var crosschannel = this;
+		if (!arguments.length) {
+			throw new TypeError('Failed to construct \'CrossChannel\': 1 argument required, but only 0 present.');
+		}
+		if (!(this instanceof CrossChannel)) {
+			throw new TypeError('Failed to construct \'CrossChannel\': Please use the \'new\' operator, this constructor cannot be called as a function.');
+		}
+		this.name = String(name);
+		this.onmessage = null;
+		this.closed = false;
+		this.messageHandlers = new HandlersCollection();
+
+		this.channel = new Channel(this.name);
+
+		this.channel.onMessageEvent(function (event) {
+			crosschannel.messageHandlers.handle(event);
+			if (typeof crosschannel.onmessage === 'function') {
+				crosschannel.onmessage(event);
+			}
+		});
+	}
+
+	CrossChannel.prototype.on = CrossChannel.prototype.addEventListener = function (type, handler) {
+		this.messageHandlers.push(handler);
+	};
+
+	CrossChannel.prototype.removeEventListener = function (type, handler) {
+		this.messageHandlers.remove(handler);
+	};
+
+	CrossChannel.prototype.removeAllListeners = function () {
+		this.messageHandlers.empty();
+	};
+
+	CrossChannel.prototype.once = function (type, handler) {
+		var crosschannel = this;
+		function removeHandler() {
+			crosschannel.messageHandlers.remove(handler);
+			crosschannel.messageHandlers.remove(removeHandler);
+		}
+		this.messageHandlers.push(handler);
+		this.messageHandlers.push(removeHandler);
+	};
+
+	CrossChannel.prototype.postMessage = function (message) {
+		if (!arguments.length) {
+			throw new TypeError('Failed to execute \'postMessage\' on \'CrossChannel\': 1 argument required, but only 0 present.');
+		}
+		if (this.closed) {
+			return;
+		}
+		this.channel.send(message);
+	};
+
+	CrossChannel.prototype.close = function () {
+		this.channel.close();
+		this.messageHandlers.empty();
+		this.closed = true;
+	};
+
+	CrossChannel.prototype.valueOf = function () {
+		return '[object CrossChannel]';
+	};
+
+	module.exports = CrossChannel;
+	return module.exports;
+});
+$__System.registerDynamic('21', [], true, function ($__require, exports, module) {
 	//Internal task scheduling
 	'use strict';
 
@@ -344,7 +1147,30 @@ $__System.registerDynamic('4', [], true, function ($__require, exports, module) 
 	};
 	return module.exports;
 });
-$__System.registerDynamic('5', [], true, function ($__require, exports, module) {
+$__System.registerDynamic('22', [], true, function ($__require, exports, module) {
+	'use strict';
+
+	/**
+  * Internal event constructor
+  */
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var ConnexionEvent = function (origin) {
+		this.emitter = origin && origin.emitter || '';
+		this.scope = origin && origin.scope || '';
+		this.type = origin && origin.type || '*';
+		this.timeStamp = origin && 'timeStamp' in origin ? origin.timeStamp : new Date().getTime();
+		this.detail = origin && origin.detail;
+		this.detail = this.detail && typeof this.detail === 'object' ? this.detail : {};
+	};
+
+	//export
+	module.exports = ConnexionEvent;
+	return module.exports;
+});
+$__System.registerDynamic('23', [], true, function ($__require, exports, module) {
 	var define,
 	    global = this || self,
 	    GLOBAL = global;
@@ -353,11 +1179,10 @@ $__System.registerDynamic('5', [], true, function ($__require, exports, module) 
 	(function (self, nodeGlobal, browserWindow, undefined) {
 		'use strict';
 
-		var window = self.window || browserWindow || {},
-		    location = window.location || {},
-		    global = nodeGlobal || ('top' in window ? window.top.global || {} : {}),
-		    //NodeJS `global`
-		isNodeJs = 'require' in global && 'process' in global && typeof __dirname !== 'undefined' && global.global === global; //NodeJS context
+		var window = self.window || browserWindow || {};
+		var location = window.location || {};
+		var global = nodeGlobal || ('top' in window ? window.top.global || {} : {}); //NodeJS `global`
+		var isNodeJs = 'require' in global && 'process' in global && typeof __dirname !== 'undefined' && global.global === global; //NodeJS context
 
 		//export
 		exports.window = window;
@@ -368,7 +1193,7 @@ $__System.registerDynamic('5', [], true, function ($__require, exports, module) 
 	})(this, typeof global !== 'undefined' ? global : null, typeof window !== 'undefined' ? window : null);
 	return module.exports;
 });
-$__System.registerDynamic('6', [], true, function ($__require, exports, module) {
+$__System.registerDynamic('24', [], true, function ($__require, exports, module) {
 	'use strict';
 
 	var define,
@@ -380,8 +1205,8 @@ $__System.registerDynamic('6', [], true, function ($__require, exports, module) 
 	};
 
 	Observable.prototype.emit = function (value) {
-		var i = -1,
-		    observers = this.observers;
+		var i = -1;
+		var observers = this.observers;
 
 		this.value = value;
 		while (++i in observers) {
@@ -421,16 +1246,94 @@ $__System.registerDynamic('6', [], true, function ($__require, exports, module) 
 	module.exports = Observable;
 	return module.exports;
 });
-$__System.registerDynamic('7', ['4', '8', '5', '6'], true, function ($__require, exports, module) {
+$__System.registerDynamic('25', [], true, function ($__require, exports, module) {
 	'use strict';
 
 	var define,
 	    global = this || self,
 	    GLOBAL = global;
-	var setAsyncTask = $__require('4').setAsync;
-	var ConnexionEvent = $__require('8');
-	var environment = $__require('5');
-	var Observable = $__require('6');
+	var create = Object.create;
+
+	module.exports = function () {
+		return create ? create(null) : {};
+	};
+	return module.exports;
+});
+$__System.registerDynamic("26", [], false, function ($__require, $__exports, $__module) {
+  var _retrieveGlobal = $__System.get("@@global-helpers").prepareGlobal($__module.id, null, null);
+
+  (function ($__global) {
+    (function (e) {
+      function f(a, c) {
+        function b(a) {
+          if (!this || this.constructor !== b) return new b(a);this._keys = [];this._values = [];this._itp = [];this.objectOnly = c;a && v.call(this, a);
+        }c || w(a, "size", { get: x });a.constructor = b;b.prototype = a;return b;
+      }function v(a) {
+        this.add ? a.forEach(this.add, this) : a.forEach(function (a) {
+          this.set(a[0], a[1]);
+        }, this);
+      }function d(a) {
+        this.has(a) && (this._keys.splice(b, 1), this._values.splice(b, 1), this._itp.forEach(function (a) {
+          b < a[0] && a[0]--;
+        }));return -1 < b;
+      }function m(a) {
+        return this.has(a) ? this._values[b] : void 0;
+      }function n(a, c) {
+        if (this.objectOnly && c !== Object(c)) throw new TypeError("Invalid value used as weak collection key");if (c != c || 0 === c) for (b = a.length; b-- && !y(a[b], c););else b = a.indexOf(c);return -1 < b;
+      }function p(a) {
+        return n.call(this, this._values, a);
+      }function q(a) {
+        return n.call(this, this._keys, a);
+      }function r(a, c) {
+        this.has(a) ? this._values[b] = c : this._values[this._keys.push(a) - 1] = c;return this;
+      }function t(a) {
+        this.has(a) || this._values.push(a);return this;
+      }function h() {
+        (this._keys || 0).length = this._values.length = 0;
+      }function z() {
+        return k(this._itp, this._keys);
+      }function l() {
+        return k(this._itp, this._values);
+      }function A() {
+        return k(this._itp, this._keys, this._values);
+      }function B() {
+        return k(this._itp, this._values, this._values);
+      }function k(a, c, b) {
+        var g = [0],
+            e = !1;a.push(g);return { next: function () {
+            var f,
+                d = g[0];!e && d < c.length ? (f = b ? [c[d], b[d]] : c[d], g[0]++) : (e = !0, a.splice(a.indexOf(g), 1));return { done: e, value: f };
+          } };
+      }function x() {
+        return this._values.length;
+      }function u(a, c) {
+        for (var b = this.entries();;) {
+          var d = b.next();if (d.done) break;
+          a.call(c, d.value[1], d.value[0], this);
+        }
+      }var b,
+          w = Object.defineProperty,
+          y = function (a, b) {
+        return isNaN(a) ? isNaN(b) : a === b;
+      };"undefined" == typeof WeakMap && (e.WeakMap = f({ "delete": d, clear: h, get: m, has: q, set: r }, !0));"undefined" != typeof Map && "function" === typeof new Map().values && new Map().values().next || (e.Map = f({ "delete": d, has: q, get: m, set: r, keys: z, values: l, entries: A, forEach: u, clear: h }));"undefined" != typeof Set && "function" === typeof new Set().values && new Set().values().next || (e.Set = f({ has: p, add: t, "delete": d, clear: h,
+        keys: l, values: l, entries: B, forEach: u }));"undefined" == typeof WeakSet && (e.WeakSet = f({ "delete": d, add: t, clear: h, has: p }, !0));
+    })("undefined" != typeof exports && "undefined" != typeof global ? global : window);
+  })(this);
+
+  return _retrieveGlobal();
+});
+$__System.registerDynamic('27', ['21', '22', '23', '24', '25', '26'], true, function ($__require, exports, module) {
+	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var setAsyncTask = $__require('21').setAsync;
+	var ConnexionEvent = $__require('22');
+	var environment = $__require('23');
+	var Observable = $__require('24');
+	var pojo = $__require('25');
+	$__require('26'); //WeakMap polyfill
 
 	var isNodeJs = environment.isNodeJs;
 
@@ -443,8 +1346,8 @@ $__System.registerDynamic('7', ['4', '8', '5', '6'], true, function ($__require,
 	}
 
 	var Emitter = function () {
-		this.subjects = Object.create(null);
-		this.subscriptions = Object.create(null);
+		this.subjects = pojo();
+		this.subscriptions = pojo();
 	};
 
 	Emitter.prototype._ensureSubjectExists = function (name) {
@@ -558,7 +1461,12 @@ $__System.registerDynamic('7', ['4', '8', '5', '6'], true, function ($__require,
   * @return {Object} - Emitter object
   */
 	Emitter.prototype.unsubscribe = function (eventType, handler) {
-		var listeners, subject, subjects, observer, observers, i;
+		var listeners;
+		var subject;
+		var subjects;
+		var observer;
+		var observers;
+		var i;
 		//all listeners and all events
 		if (!eventType && !handler) {
 			subjects = this.subjects;
@@ -578,7 +1486,6 @@ $__System.registerDynamic('7', ['4', '8', '5', '6'], true, function ($__require,
 					subject = this.subjects[eventType];
 					if (subject) {
 						subject.unsubscribe();
-						//setAsyncTask(subject.unsubscribe.bind(subject));
 						this._ensureSubjectDestroyed(eventType); //releases all subscriptions references
 					}
 				}
@@ -586,7 +1493,7 @@ $__System.registerDynamic('7', ['4', '8', '5', '6'], true, function ($__require,
 				else if (eventType && handler) {
 						subject = this.subjects[eventType];
 						//if (subject) {
-						//	subject.unsubscribe(handler);
+						//	subject.unsubscribe(handler)
 						//}
 
 
@@ -598,7 +1505,6 @@ $__System.registerDynamic('7', ['4', '8', '5', '6'], true, function ($__require,
 								handler = observer.callback;
 								//remove handler
 								subject.unsubscribe(observer);
-								//setAsyncTask(subject.unsubscribe.bind(subject, observer));
 								observer.callback = undefined;
 
 								observers = listeners.get(handler);
@@ -616,7 +1522,6 @@ $__System.registerDynamic('7', ['4', '8', '5', '6'], true, function ($__require,
 										observer = observers[i];
 										//remove handler
 										subject.unsubscribe(observer);
-										//setAsyncTask(subject.unsubscribe.bind(subject, observer));
 										observer.callback = undefined;
 									}
 									listeners.delete(handler);
@@ -630,11 +1535,11 @@ $__System.registerDynamic('7', ['4', '8', '5', '6'], true, function ($__require,
 	Emitter.prototype.once = function (subscriber, eventType, handler) {
 		var emitter = this;
 		var observer = subscriber.call(emitter, eventType, handler);
-		subscriber.call(emitter, eventType, unsubscriber);
 		function unsubscriber() {
 			emitter.unsubscribe(eventType, unsubscriber);
 			emitter.unsubscribe(eventType, observer);
 		}
+		subscriber.call(emitter, eventType, unsubscriber);
 		return observer;
 	};
 
@@ -642,13 +1547,13 @@ $__System.registerDynamic('7', ['4', '8', '5', '6'], true, function ($__require,
 	module.exports = Emitter;
 	return module.exports;
 });
-$__System.registerDynamic('9', ['7'], true, function ($__require, exports, module) {
+$__System.registerDynamic('28', ['27'], true, function ($__require, exports, module) {
 	'use strict';
 
 	var define,
 	    global = this || self,
 	    GLOBAL = global;
-	var Emitter = $__require('7');
+	var Emitter = $__require('27');
 
 	var emitter = new Emitter();
 
@@ -662,339 +1567,127 @@ $__System.registerDynamic('9', ['7'], true, function ($__require, exports, modul
 	module.exports = emitter;
 	return module.exports;
 });
-$__System.registerDynamic('8', [], true, function ($__require, exports, module) {
-	'use strict';
-
-	/**
-  * Internal event constructor
-  */
-
-	var define,
-	    global = this || self,
-	    GLOBAL = global;
-	var ConnexionEvent = function (origin) {
-		this.emitter = origin && origin.emitter || '';
-		this.scope = origin && origin.scope || '';
-		this.type = origin && origin.type || '*';
-		this.timeStamp = origin && 'timeStamp' in origin ? origin.timeStamp : new Date().getTime();
-		this.detail = origin && origin.detail;
-		this.detail = this.detail && typeof this.detail === 'object' ? this.detail : {};
-	};
-
-	//export
-	module.exports = ConnexionEvent;
-	return module.exports;
-});
-$__System.registerDynamic('a', ['5', '9', '8'], true, function ($__require, exports, module) {
+$__System.registerDynamic('29', ['20', '28'], true, function ($__require, exports, module) {
 	'use strict';
 
 	var define,
 	    global = this || self,
 	    GLOBAL = global;
-	var environment = $__require('5'),
-	    emitter = $__require('9'),
-	    ConnexionEvent = $__require('8');
+	var CrossChannel = $__require('20');
 
-	var channel = exports,
-	    //exportable
-	eventKey = ConnexionEvent.key,
-	    emitterEmit = emitter.emit,
-	    globalScope = environment.global,
-	    isNodeJs = environment.isNodeJs,
-	    connextionMessageRegExp = /^__([A-Za-z]+?)__:/;
+	var eventChannel = new CrossChannel('connexion-event');
+	var setupChannel = new CrossChannel('connexion-setup');
+	var setupResponseChannel = new CrossChannel('connexion-setup-response');
+	var channel = exports;
 
-	var whenGuiReady = new Promise(function (resolve) {
-		//resolved only in a Node-Webkit environment
-		if (globalScope.process /*&& ('node-webkit' in global.process.versions)*/) {
-				var timerId = setInterval(function () {
-					if (globalScope.window) {
-						clearInterval(timerId);
-						var gui = globalScope.window.nwDispatcher.requireNwGui();
-						resolve(gui);
-					}
-				}, 10);
-			}
-	});
-
-	/**
-  * Creates a collection of all child frames/iframes windows objects. Takes into a count deeper nested frames.
-  * @param [Window] topWin - Main document window, where to search child frames
-  * @returns [Array] - Array of all child windows.
-  */
-	channel.getAllChildWindows = function (topWin) {
-		var wins = [],
-		    frames = topWin.frames,
-		    win,
-		    i = frames.length;
-
-		while (i--) {
-			win = frames[i];
-			wins.push(win);
-			//include deeper level frames
-			wins = wins.concat(channel.getAllChildWindows(win));
-		}
-
-		return wins;
-	};
-
-	channel.getCurrentNWWindow = function () {
-		return whenGuiReady.then(function (gui) {
-			return gui.Window.get();
-		});
-	};
-
-	/**
-  * Sends a message to other windows with an event object attached.
-  */
-	channel.sendMessage = function (connexionMessage) {
-		var browserWindow = globalScope.window || {},
-		    location = browserWindow.location,
-		    origin = location && (location.origin || location.protocol + '//' + location.host) || '*',
-		    browserFrames = browserWindow.top && [browserWindow.top].concat(channel.getAllChildWindows(browserWindow.top)) || [];
-
-		origin = '*'; //!!!!!!!!
-
-		if (isNodeJs) {
-			channel.getCurrentNWWindow().then(function (nwWindow) {
-				browserFrames.forEach(function (win) {
-					//.replace(/'/g, '\\\'')
-					nwWindow.eval(win.frameElement || null, 'window.postMessage(' + JSON.stringify(connexionMessage) + ', "' + origin + '");');
-				});
-			});
-		} else {
-			browserFrames.forEach(function (win) {
-				try {
-					win.postMessage(connexionMessage, origin);
-				} catch (err) {
-					console.error(err, connexionMessage);
-					//var e;
-					//e = win.document.createEvent('Event')
-					//e.initEvent('message', false, false)
-					//e.data = message
-					//e.origin = origin
-					//e.source = window
-					//win.dispatchEvent(e)
-				}
-			});
-		}
-	};
-
-	channel.sendEvent = function (event) {
-		var connexionMessage = channel._createEvent(event);
-		channel.sendMessage(connexionMessage);
-	};
-
-	channel.sendSetup = function (setup) {
-		var connexionMessage = channel._createSetup(setup);
-		channel.sendMessage(connexionMessage);
-	};
-
-	channel.sendSetupResponse = function (setup) {
-		var connexionMessage = channel._createSetupResponse(setup);
-		channel.sendMessage(connexionMessage);
-	};
-
-	/**
-  * Subscribes to messages from other windows.
-  */
-	channel.onMessage = function (handler, messageType, once) {
-		var browserWindow = globalScope.window;
-		if (browserWindow && browserWindow.addEventListener) {
-			browserWindow.addEventListener('message', function onMessagePosted(e) {
-				//e.data
-				//e.source - some window, which called `postMessage`
-				//e.origin
-				var isMessageEventWorking = this.MessageEvent && this.MessageEvent.length,
-				    event = isMessageEventWorking ? new this.MessageEvent('message', e) : e,
-				    //fixes crashes in NWjs, when read `e.data`
-				message = event.data,
-				    connectionCretaria,
-				    connectionType,
-				    connectionMatch,
-				    data;
-
-				//parse message without try-catch
-				if (message && typeof message === 'string') {
-					connectionMatch = message.match(connextionMessageRegExp);
-
-					if (connectionMatch) {
-						connectionCretaria = connectionMatch[0];
-						connectionType = connectionMatch[1];
-						if (connectionType === messageType) {
-							data = JSON.parse(message.substr(connectionCretaria.length));
-						}
-					}
-				}
-
-				if (data //if message is from Connexion
-				&& ('key' in data && data.key !== eventKey || //filter events that are sent back
-				data.length && data[0].event.key !== eventKey //filter setup data that is sent back
-				)) {
-					if (once) {
-						//detach handler if should be handled only once
-						this.removeEventListener('message', onMessagePosted, false);
-					}
-					handler(data);
-				}
-			}, false);
-		}
-		browserWindow = undefined;
-	};
-
-	channel.onEvent = function (handler) {
-		return channel.onMessage(function (event) {
-			if (event //if message is from a Connexion
-			&& event.key !== eventKey //filter messages that are sent back
-			) {
-					handler(event);
-				}
-		}, 'connexionEvent');
-	};
-
-	channel.onSetup = function (handler) {
-		return channel.onMessage(handler, 'connexionSetup');
-	};
-
-	channel.onceSetupResponse = function (handler) {
-		return channel.onMessage(handler, 'connexionSetupResponse', true);
-	};
-
-	/**
-  * Initiates event in a current window.
-  */
-	channel.invokeEvent = function (event) {
-		//use event object declaration as a first parameter
-		return emitterEmit.call(emitter, event);
-	};
-
-	/**
-  * Message creator 
-  */
-	channel._createEvent = function (event) {
-		return '__connexionEvent__:' + JSON.stringify(event);
-	};
-
-	/**
-  * Setup data creator
-  */
-	channel._createSetup = function (setupData) {
-		return '__connexionSetup__:' + JSON.stringify([{ event: { key: eventKey } }]);
-	};
-
-	/**
-  * Setup response data creator
-  */
-	channel._createSetupResponse = function (setupData) {
-		return '__connexionSetupResponse__:' + JSON.stringify(setupData);
-	};
-
-	channel.getStreamsData = function () {
-		var eventStreams = emitter.subjects,
-		    eventTypes = Object.keys(eventStreams);
-		return eventTypes.map(function (eventType) {
-			var stream = eventStreams[eventType];
-			return {
-				name: eventType,
-				event: stream.value
-			};
-		});
-	};
-
-	channel.setStreamsData = function (streamsData) {
-		var eventStreams = emitter.subjects;
-
-		streamsData.forEach(function (data) {
-			var name = data.name,
-			    event = data.event,
-			    stream,
-			    streamValue;
-
-			if (!name || name === '*') {
-				//Skip 'any event' declaretion. It will be defined in local instance dinamically by another event.
-				return; //EXIT
-			}
-			if (!event.timeStamp) {
-				//Skip events that wasn't emitted yet (timeStamp = 0)
-				return; //EXIT
-			}
-
-			//if an event is completely new, than a local event, then emit a newer event to update a value in listeners
-			if (!(name in eventStreams)) {
-				channel.invokeEvent(event);
-			}
-			// or an event is later, than a local event, then emit a newer event to update a value in listeners
-			else {
-					stream = eventStreams[name];
-					streamValue = stream.value;
-					if (event.timeStamp > streamValue.timeStamp) {
-						channel.invokeEvent(event);
-					}
-				}
-		});
-	};
-
-	channel.attachMessageHandlers = function () {
-		channel.onEvent(channel.invokeEvent);
-		channel.onSetup(function (setup) {
-			channel.sendSetupResponse(channel.getStreamsData());
-			channel.setStreamsData(setup);
-		});
-		channel.onceSetupResponse(channel.setStreamsData);
-	};
-
-	//send past events to other instances
-	channel.sendSetup(channel.getStreamsData());
+	var emitter = $__require('28');
+	var emitterEmit = emitter.emit;
 
 	//augment `emit`
 	emitter.emit = function (type, detail) {
 		var event = emitterEmit.call(emitter, type, detail);
-		channel.sendEvent(event);
+		eventChannel.postMessage(event);
 		return event;
 	};
 
-	//attach "on message" handler
-	if (isNodeJs) {
-		//NW
-		channel.getCurrentNWWindow().then(function (win) {
-			//listen, when new page is open
-			win.on('loaded', function () {
-				var browserWindow = globalScope.window;
-				//listen main window only once
-				if (!browserWindow.__ConnexionNodeChannel) {
-					browserWindow.__ConnexionNodeChannel = true; //mark as listened by Node
-					channel.attachMessageHandlers();
-				}
+	function getSubjectsData() {
+		var eventSubjects = emitter.subjects;
+		var eventTypes = Object.keys(emitter.subjects);
+		var subject;
+		var eventType;
+		var subjectsData = [];
+		var index = -1;
+
+		while (++index in eventTypes) {
+			eventType = eventTypes[index];
+			subject = eventSubjects[eventType];
+			subjectsData.push({
+				type: eventType,
+				event: subject.value
 			});
-		});
-	} else {
-		//Browser
-		channel.attachMessageHandlers();
+		}
+		return subjectsData;
 	}
 
-	//globalScope.channel = channel;
-	//globalScope.emitter = emitter;
+	function setSubjectsData(messageEvent) {
+		var subjectsData = messageEvent.data;
+		var emitterSubjects = emitter.subjects;
+		var index = -1;
+		var data;
+		var type;
+		var event;
+		var subject;
+		var subjectValue;
 
+		while (++index in subjectsData) {
+			data = subjectsData[index];
+			type = data.type;
+			event = data.event;
+
+			// skip 'wildcard event' declaretion. It will be defined in local instance dinamically by another event.
+			if (type === '*') {
+				continue;
+			}
+			// if event was never fired
+			else if (!event.timeStamp) {
+					continue;
+				}
+				// if an event is completely new or an event is later than a local event, then emit a newer event to update a value in listeners
+				else if (!(type in emitterSubjects)) {
+						emitterEmit.call(emitter, event);
+					}
+					// or an event is later than a local event, then emit a newer event to update a value in listeners
+					else {
+							subject = emitterSubjects[type];
+							subjectValue = subject.value;
+							if (event.timeStamp > subjectValue.timeStamp) {
+								emitter.emit(event);
+							}
+						}
+		}
+	}
+
+	/**
+  * Invokes event in a current window.
+  */
+	function emitEvent(messageEvent) {
+		var event = messageEvent.data;
+		//use event object declaretion as a first parameter
+		emitterEmit.call(emitter, event);
+	}
+
+	function sendSetupResponse() {
+		var setup = getSubjectsData();
+		setupResponseChannel.postMessage(setup);
+	}
+
+	function sendSetup() {
+		var setup = getSubjectsData();
+		setupChannel.postMessage(setup);
+	}
+
+	eventChannel.on('message', emitEvent);
+	setupChannel.on('message', sendSetupResponse);
+	setupChannel.on('message', setSubjectsData);
+	setupResponseChannel.once('message', setSubjectsData);
+
+	//send past events to other instances
+	sendSetup();
 	return module.exports;
 });
-$__System.registerDynamic('1', ['5', '9', '2', '3', 'a'], true, function ($__require, exports, module) {
-	'format cjs';
+$__System.registerDynamic('1', ['23', '28', '29'], true, function ($__require, exports, module) {
 	'use strict';
 
 	var define,
 	    global = this || self,
 	    GLOBAL = global;
-	var DOMWindow = $__require('5').window;
-	var emitter = $__require('9');
+	var window = $__require('23').window;
+	var emitter = $__require('28');
+	$__require('29'); //include communication channel
 
 	var GLOBAL_NAME = 'connexion';
 
-	//include polyfills
-	$__require('2');
-	$__require('3');
-
 	exports.version = '0.6.0';
-
-	exports.chanel = $__require('a');
 
 	exports.listen = function (type, handler) {
 		emitter.listen(type, handler);
@@ -1024,7 +1717,7 @@ $__System.registerDynamic('1', ['5', '9', '2', '3', 'a'], true, function ($__req
 	/**
   * Connexion public object.
   */
-	DOMWindow[GLOBAL_NAME] = exports;
+	window[GLOBAL_NAME] = exports;
 	return module.exports;
 });
 })
