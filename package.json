@@ -1,7 +1,7 @@
 {
 	"name": "connexionjs",
 	"description": "Event emitter library",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"license": "MIT",
 	"author": "Constantine Genchevsky",
 	"main": "src/index.js",
@@ -18,7 +18,7 @@
 	],
 	"dependencies": {
 		"es6-collections": "0.5.6",
-		"cross-channel": "0.4.0"
+		"cross-channel": "0.4.1"
 	},
 	"devDependencies": {
 		"grunt": "1.0.1",
