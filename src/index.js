@@ -6,7 +6,7 @@ require('./channel.js') //include communication channel
 
 var GLOBAL_NAME = 'connexion'
 
-exports.version = '0.6.0'
+exports.version = '0.6.1'
 
 exports.listen = function (type, handler) {
 	emitter.listen(type, handler)

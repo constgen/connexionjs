@@ -1687,7 +1687,7 @@ $__System.registerDynamic('1', ['23', '28', '29'], true, function ($__require, e
 
 	var GLOBAL_NAME = 'connexion';
 
-	exports.version = '0.6.0';
+	exports.version = '0.6.1';
 
 	exports.listen = function (type, handler) {
 		emitter.listen(type, handler);
