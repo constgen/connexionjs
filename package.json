@@ -1,10 +1,11 @@
 {
 	"name": "connexionjs",
 	"description": "Event emitter library",
-	"version": "0.6.1",
+	"version": "0.7.0",
 	"license": "MIT",
 	"author": "Constantine Genchevsky",
 	"main": "src/index.js",
+	"browser": "dist/connexion.js",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/constgen/connexionjs.git"
@@ -12,13 +13,17 @@
 	"keywords": [
 		"connexion",
 		"connection",
-		"event emitter",
+		"event",
+		"emitter",
 		"cross-frame",
-		"messaging"
+		"cross-origin",
+		"messaging",
+		"publisher",
+		"subscriber"
 	],
 	"dependencies": {
 		"es6-collections": "0.5.6",
-		"cross-channel": "0.4.1"
+		"cross-channel": "~0.6.1"
 	},
 	"devDependencies": {
 		"grunt": "1.0.1",
@@ -42,5 +47,12 @@
 	"engines": {
 		"node": ">=0.10.0",
 		"npm": ">=3.0.0"
-	}
+	},
+	"files": [
+		"src",
+		"dist",
+		"LICENSE",
+		"README.md",
+		"package.json"
+	]
 }
