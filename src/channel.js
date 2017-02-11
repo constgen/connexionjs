@@ -7,6 +7,8 @@ var setupChannel = new CrossChannel('connexion-setup')
 var setupResponseChannel = new CrossChannel('connexion-setup-response')
 
 var emitter = require('./emitter.js')
+var objectKeys = require('./utils/object-keys.js')
+
 var emitterEmit = emitter.emit
 
 //augment `emit`
@@ -18,7 +20,7 @@ emitter.emit = function (type, detail) {
 
 function getSubjectsData() {
 	var eventSubjects = emitter.subjects
-	var eventTypes = Object.keys(emitter.subjects)
+	var eventTypes = objectKeys(emitter.subjects)
 	var subject
 	var eventType
 	var subjectsData = []
