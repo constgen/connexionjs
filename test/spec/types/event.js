@@ -3,56 +3,62 @@
 var ConnexionEvent = require('../../../src/types/event.js')
 
 describe('event', function () {
-	var message = {
-		type: 'test',
-		emitter: 'system',
-		detail: {
-			a: 1,
-			b: 2
+	var message
+	var emptyEvent
+	var messageEvent
+
+	beforeEach(function(){
+		message = {
+			type: 'test',
+			emitter: 'system',
+			detail: {
+				a: 1,
+				b: 2
+			}
 		}
-	}
+		emptyEvent = new ConnexionEvent()
+		messageEvent = new ConnexionEvent(message)
+	})
 
 	it('is a constructor', function () {
-		var defaultEvent = new ConnexionEvent()
-		var messageEvent = new ConnexionEvent(message)
-		expect(defaultEvent).toEqual(jasmine.any(ConnexionEvent))
+		expect(emptyEvent).toEqual(jasmine.any(ConnexionEvent))
 		expect(messageEvent).toEqual(jasmine.any(ConnexionEvent))
 	})
 
 	describe('if argument is not passed, has correct property', function () {
-		var event = new ConnexionEvent()
-
 		it('emitter', function () {
-			expect(event.emitter).toBe('')
+			expect(emptyEvent.emitter).toBe('')
 		})
 		it('type', function () {
-			expect(event.type).toBe('*')
+			expect(emptyEvent.type).toBe('*')
 		})
 		it('timeStamp', function () {
-			expect(typeof event.timeStamp).toBe('number')
-			//expect(event.timeStamp).toBe(new Date().getTime())
+			expect(typeof emptyEvent.timeStamp).toBe('number')
+			//expect(emptyEvent.timeStamp).toBe(new Date().getTime())
 		})
 		it('detail', function () {
-			expect(event.detail).toEqual({})
+			expect(emptyEvent.detail).toEqual({})
 		})
 	})
 
 	describe('has correct values if Event is passed as argument', function () {
-		var event = new ConnexionEvent(message)
-
 		it('emitter', function () {
-			expect(event.emitter).toBe(message.emitter)
+			expect(messageEvent.emitter).toBe(message.emitter)
 		})
 		it('type', function () {
-			expect(event.type).toBe(message.type)
+			expect(messageEvent.type).toBe(message.type)
 		})
 		it('timeStamp', function () {
-			expect(typeof event.timeStamp).toBe('number')
-			//expect(event.timeStamp).toBe(new Date().getTime())
+			expect(typeof messageEvent.timeStamp).toBe('number')
+			//expect(messageEvent.timeStamp).toBe(new Date().getTime())
 		})
 		it('detail', function () {
-			expect(event.detail).toEqual(message.detail)
+			expect(messageEvent.detail).toEqual(message.detail)
 		})
+	})
+
+	xit('accespts only object as a detail', function(){
+
 	})
 })
 

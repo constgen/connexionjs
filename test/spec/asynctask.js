@@ -5,7 +5,6 @@ var task = require('../../src/asynctask.js')
 var setAsyncTask = task.setAsync
 var clearAsyncTask = task.clearAsync
 
-
 describe('asynctask', function () {
 	var handler = {
 		callback: function () { },

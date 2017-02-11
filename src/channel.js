@@ -5,7 +5,6 @@ var CrossChannel = require('cross-channel')
 var eventChannel = new CrossChannel('connexion-event')
 var setupChannel = new CrossChannel('connexion-setup')
 var setupResponseChannel = new CrossChannel('connexion-setup-response')
-var channel = exports
 
 var emitter = require('./emitter.js')
 var emitterEmit = emitter.emit
@@ -102,4 +101,4 @@ setupResponseChannel.once('message', setSubjectsData)
 //send past events to other instances
 sendSetup()
 
-
+module.exports = {}

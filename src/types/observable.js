@@ -29,16 +29,17 @@ Observable.prototype.observe = function (callback) {
 
 Observable.prototype.unsubscribe = function (callback) {
 	var index
+	var observers = this.observers
 	//unsubscribe all
 	if (callback === undefined) {
-		this.observers.length = 0
+		observers.length = 0
 	}
 	//unsubscribe a certain observer
 	else {
-		index = this.observers.indexOf(callback)
+		index = observers.indexOf(callback)
 		while (~index) {
-			this.observers.splice(index, 1)
-			index = this.observers.indexOf(callback)
+			observers.splice(index, 1)
+			index = observers.indexOf(callback)
 		}
 	}
 	return this
