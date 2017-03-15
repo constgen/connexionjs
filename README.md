@@ -95,43 +95,43 @@ The version of the library. Sinse the version is important for compatibility bet
 
 | Browser            | support |
 |--------------------|:-------:|
-| self               |    +    |
-| frames             |    +    |
-| tabs               |    +    |
+| self               |    ✓    |
+| frames             |    ✓    |
+| tabs               |    ✓    |
 | workers            |         |
 
 <!--| Electron           | support |
 |--------------------|:-------:|
-| self               |    +    |
-| frames             |    +    |
-| tabs               |    +    |-->
+| self               |    ✓    |
+| frames             |    ✓    |
+| tabs               |    ✓    |-->
 
 | Node-webkit <=0.11 | support |
 |--------------------|:-------:|
-| self               |    +    |
-| frames             |    +    |
+| self               |    ✓    |
+| frames             |    ✓    |
 | windows            |    -    |
-| NodeJS             |    +    |
+| NodeJS             |    ✓    |
 
 | NWJS >=0.13        | support |
 |--------------------|:-------:|
-| self               |    +    |
-| frames             |    +    |
-| windows            |    +    |
+| self               |    ✓    |
+| frames             |    ✓    |
+| windows            |    ✓    |
 | NodeJS             |    -    |
 
 | Browser extension  | support |
 |--------------------|:-------:|
-| self               |    +    |
-| background         |    +    |
-| content            |    +    |
-| popup              |    +    |
+| self               |    ✓    |
+| background         |    ✓    |
+| content            |    ✓    |
+| popup              |    ✓    |
 
-| NodeJS >=0.8       | support |
+| NodeJS >=0.10      | support |
 |--------------------|:-------:|
-| self               |    +    |
-| child process      |    -    |
-| parallel process   |    -    |
+| self               |    ✓    |
+| child processes    |    -    |
+| parallel processes |    -    |
 
 ### Polyfills that may be required for old platforms:
 - Array `indexOf()` (IE <=8)
