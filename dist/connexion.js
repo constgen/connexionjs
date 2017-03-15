@@ -505,45 +505,46 @@ $__System.registerDynamic('16', ['13', '15'], true, function ($__require, export
 		this.identifier = Symbol();
 	}
 
-	HandlersCollection.prototype.handle = function (event) {
-		var handler = this.head.next;
-		while (handler) {
-			handler.call(event);
-			handler = handler.next;
+	HandlersCollection.prototype = {
+		constructor: HandlersCollection,
+
+		handle: function (event) {
+			var handler = this.head.next;
+			while (handler) {
+				handler.call(event);
+				handler = handler.next;
+			}
+		},
+
+		push: function (callback) {
+			var handler = new Handler(callback, this.identifier);
+			var last = this.tail.prev;
+			if (handler.next) {
+				//is already in collection
+				return;
+			}
+			handler.next = this.tail;
+			this.tail.prev = handler;
+			handler.prev = last;
+			last.next = handler;
+		},
+
+		remove: function (callback) {
+			var handler = new Handler(callback, this.identifier);
+			var prev = handler.prev;
+			var next = handler.next;
+			if (prev) {
+				prev.next = next;
+			}
+			if (next) {
+				next.prev = prev;
+			}
+		},
+
+		empty: function () {
+			this.head.next = this.tail;
+			this.tail.prev = this.head;
 		}
-		//handler.call(event)
-	};
-
-	HandlersCollection.prototype.push = function (callback) {
-		var handler = new Handler(callback, this.identifier);
-		var last = this.tail.prev;
-
-		if (handler.next) {
-			//is already in collection
-			return;
-		}
-		handler.next = this.tail;
-		this.tail.prev = handler;
-		handler.prev = last;
-		last.next = handler;
-	};
-
-	HandlersCollection.prototype.remove = function (callback) {
-		var handler = new Handler(callback, this.identifier);
-		var prev = handler.prev;
-		var next = handler.next;
-
-		if (prev) {
-			prev.next = next;
-		}
-		if (next) {
-			next.prev = prev;
-		}
-	};
-
-	HandlersCollection.prototype.empty = function () {
-		this.head.next = this.tail;
-		this.tail.prev = this.head;
 	};
 
 	module.exports = HandlersCollection;
@@ -596,12 +597,13 @@ $__System.registerDynamic('17', ['18', '19', '1a', '1b', '1c', '1d'], true, func
 	Transport.EVENT_TYPE = 'message';
 
 	Transport.prototype = {
+		constructor: Transport,
+
 		send: function (data) {
 			var origin = this.origin;
 			var message = new Message(data, this);
 			var windows = getCrossChildWindows(this.port1);
 			var index = -1;
-
 			this.port1.postMessage(message, origin); //always send message to a top window
 			while (++index in windows) {
 				windows[index].postMessage(message, origin);
@@ -678,12 +680,13 @@ $__System.registerDynamic('1e', ['18', '19', '1a', '1b', '1c'], true, function (
 	Transport.EVENT_TYPE = 'message';
 
 	Transport.prototype = {
+		constructor: Transport,
+
 		send: function (data) {
 			var origin = this.origin;
 			var message = new Message(data, this);
 			var windows = getAllWindows(this.port1);
 			var index = -1;
-
 			while (++index in windows) {
 				windows[index].postMessage(message, origin);
 			}
@@ -712,135 +715,6 @@ $__System.registerDynamic('1e', ['18', '19', '1a', '1b', '1c'], true, function (
 	};
 
 	module.exports = Transport;
-	return module.exports;
-});
-$__System.registerDynamic('1b', ['1c'], true, function ($__require, exports, module) {
-	'use strict';
-
-	var define,
-	    global = this || self,
-	    GLOBAL = global;
-	var environment = $__require('1c');
-
-	module.exports = {
-		isSameOrigin: function (win, currentWin) {
-			try {
-				if (win.location.origin) {
-					if (environment.is.nw) {
-						return true; //workaround for NWJS app when external origin have full privileges
-					} else {
-						return win.location.origin === currentWin.location.origin;
-					}
-				} else {
-					return win.location.host === currentWin.location.host && win.location.protocol === currentWin.location.protocol;
-				}
-			} catch (err) {
-				return false;
-			}
-		},
-
-		getCrossOriginChildren: function getCrossOriginChildren(topWin) {
-			var crossOriginFrames = [];
-			var frames = topWin.frames;
-			var currentWin = environment.global.window;
-			var win;
-			var i = frames.length;
-			var isSameOrigin = module.exports.isSameOrigin;
-
-			while (i--) {
-				win = frames[i];
-				if (!isSameOrigin(win, currentWin)) {
-					crossOriginFrames.push(win);
-				}
-				//include deeper level frames
-				crossOriginFrames = crossOriginFrames.concat(getCrossOriginChildren(win));
-			}
-
-			return crossOriginFrames;
-		},
-
-		getSameOriginChildren: function getSameOriginChildren(topWin) {
-			var sameOriginFrames = [];
-			var frames = topWin.frames;
-			var currentWin = environment.global.window;
-			var win;
-			var i = frames.length;
-			var isSameOrigin = module.exports.isSameOrigin;
-
-			while (i--) {
-				win = frames[i];
-				if (isSameOrigin(win, currentWin)) {
-					sameOriginFrames.push(win);
-				}
-				//include deeper level frames
-				sameOriginFrames = sameOriginFrames.concat(getSameOriginChildren(win));
-			}
-
-			return sameOriginFrames;
-		},
-
-		/**
-   * Returns a collection of all child frames/iframes windows objects. Takes into a count deeper nested frames.
-   * @param [Window] topWin - Main document window, where to search child frames
-   * @returns [Array] - Array of all child windows.
-   */
-		getAllChildren: function getAllChildren(topWin) {
-			var childFrames = [];
-			var frames = topWin.frames;
-			var win;
-			var i = frames.length;
-
-			while (i--) {
-				win = frames[i];
-				childFrames.push(win);
-				//include deeper level frames
-				childFrames = childFrames.concat(getAllChildren(win));
-			}
-
-			return childFrames;
-		},
-
-		/**
-   * Returns a collection of cross origin frames/iframes windows objects. Takes into a count deeper nested frames.
-   * @param [Window] topWin - Main document window, where to search child frames
-   * @returns [Array] - Array of same origin windows.
-   */
-		getSameOrigin: function (topWin) {
-			var getSameOriginChildren = module.exports.getSameOriginChildren;
-			var isSameOrigin = module.exports.isSameOrigin;
-			var windows = getSameOriginChildren(topWin);
-			var currentWin = environment.global.window;
-			if (isSameOrigin(topWin, currentWin)) {
-				windows.push(topWin);
-			}
-			return windows;
-		},
-
-		/**
-   * Returns a collection of cross origin frames/iframes windows objects. Takes into a count deeper nested frames.
-   * @param [Window] topWin - Main document window, where to search child frames
-   * @returns [Array] - Array of cross origin child windows.
-   */
-		getCrossOrigin: function (topWin) {
-			var getCrossOriginChildren = module.exports.getCrossOriginChildren;
-			var isSameOrigin = module.exports.isSameOrigin;
-			var windows = getCrossOriginChildren(topWin);
-			var currentWin = environment.global.window;
-			if (!isSameOrigin(topWin, currentWin)) {
-				windows.push(topWin);
-			}
-			return windows;
-		},
-
-		getAll: function (topWin) {
-			if (!topWin) {
-				return [];
-			}
-			var children = module.exports.getAllChildren(topWin);
-			var windows = [topWin].concat(children);
-			return windows;
-		}
-	};
 	return module.exports;
 });
 $__System.registerDynamic('1f', ['18', '19', '1a', '1b', '1c'], true, function ($__require, exports, module) {
@@ -899,7 +773,6 @@ $__System.registerDynamic('1f', ['18', '19', '1a', '1b', '1c'], true, function (
 		this.listener = null;
 		this.name = name;
 		this.key = generateRandomKey();
-
 		this.nwLoadedListener = function () {
 			var listener = transport.listener;
 			var port = transport.port;
@@ -917,6 +790,77 @@ $__System.registerDynamic('1f', ['18', '19', '1a', '1b', '1c'], true, function (
 	Transport.supported = Boolean(environment.is.node && environment.is.nodeWebkit);
 	Transport.EVENT_TYPE = 'message';
 
+	Transport.prototype = {
+		constructor: Transport,
+
+		send: function (data) {
+			var transport = this;
+			var origin = this.origin;
+			var message = new Message(data, this);
+			getNWWindowThen(function (nwWindow) {
+				var browserWindow = transport.port;
+				var topBrowserWindow = browserWindow.top;
+				var browserFrames = getAllWindows(topBrowserWindow);
+				// try {
+				// 	if (global.__nwWindowsStore) {
+				// 		browserFrames = Object.keys(global.__nwWindowsStore)
+				// 			.map(function(id) {
+				// 				return global.__nwWindowsStore[id];
+				// 			})
+				// 			.map(function(nwWindow) {
+				// 				var browserWindow = nwWindow.window;
+				// 				return getAllWindows(browserWindow.top)
+				// 			})
+				// 			.reduce(function(allBrowserWindows, browserWindows) {
+				// 				return allBrowserWindows.concat(browserWindows)
+				// 			}, [])
+				// 	}
+				// }
+				// catch (err) {
+				// 	setTimeout(console.error.bind(console, err), 4000)
+				//
+				// }
+				var index = -1;
+				while (++index in browserFrames) {
+					//.replace(/'/g, '\\\'')
+					nwWindow.eval(browserFrames[index].frameElement || null, 'window.postMessage(' + JSON.stringify(message.asJSON()) + ', "' + origin + '")');
+				}
+			});
+		},
+
+		onMessageEvent: function (handler) {
+			var transport = this;
+			function listener(e) {
+				var window = this;
+				var nativeMessageEventWorks = window.MessageEvent && window.MessageEvent.length;
+				var event = nativeMessageEventWorks ? new window.MessageEvent(Transport.EVENT_TYPE, e) : e; //fixes crashes in NWjs, when read `e.data`
+				var messageEvent = new MessageEvent(event);
+
+				if ('key' in messageEvent && 'sourceChannel' in messageEvent && transport.name === messageEvent.sourceChannel //events on the same channel
+				&& transport.key !== messageEvent.key //skip returned back events
+				) {
+						handler(messageEvent);
+					}
+			}
+
+			getNWWindowThen(function () {
+				var port = transport.port;
+				port.removeEventListener(Transport.EVENT_TYPE, transport.listener);
+				port.addEventListener(Transport.EVENT_TYPE, listener);
+				transport.listener = listener;
+			});
+		},
+
+		close: function () {
+			var transport = this;
+			getNWWindowThen(function (nwWindow) {
+				transport.port.removeEventListener(Transport.EVENT_TYPE, transport.listener);
+				transport.listener = null;
+				nwWindow.removeListener('loaded', transport.nwLoadedListener);
+			});
+		}
+	};
+
 	//computed `this.port`
 	Object.defineProperty(Transport.prototype, 'port', {
 		get: function () {
@@ -925,94 +869,28 @@ $__System.registerDynamic('1f', ['18', '19', '1a', '1b', '1c'], true, function (
 		set: function (value) {}
 	});
 
-	Transport.prototype.send = function (data) {
-		var transport = this;
-		var origin = this.origin;
-		var message = new Message(data, this);
-		getNWWindowThen(function (nwWindow) {
-			var browserWindow = transport.port;
-			var topBrowserWindow = browserWindow.top;
-			var browserFrames = getAllWindows(topBrowserWindow);
-
-			// try {
-			// 	if (global.__nwWindowsStore) {
-			// 		browserFrames = Object.keys(global.__nwWindowsStore)
-			// 			.map(function(id) {
-			// 				return global.__nwWindowsStore[id];
-			// 			})
-			// 			.map(function(nwWindow) {
-			// 				var browserWindow = nwWindow.window;
-			// 				return getAllWindows(browserWindow.top)
-			// 			})
-			// 			.reduce(function(allBrowserWindows, browserWindows) {
-			// 				return allBrowserWindows.concat(browserWindows)
-			// 			}, [])
-			// 	}
-			// }
-			// catch (err) {
-			// 	setTimeout(console.error.bind(console, err), 4000)
-			//
-			// }
-
-			var index = -1;
-			while (++index in browserFrames) {
-				//.replace(/'/g, '\\\'')
-				nwWindow.eval(browserFrames[index].frameElement || null, 'window.postMessage(' + JSON.stringify(message.asJSON()) + ', "' + origin + '")');
-			}
-		});
-	};
-
-	Transport.prototype.onMessageEvent = function (handler) {
-		var transport = this;
-		function listener(e) {
-			var window = this;
-			var nativeMessageEventWorks = window.MessageEvent && window.MessageEvent.length;
-			var event = nativeMessageEventWorks ? new window.MessageEvent(Transport.EVENT_TYPE, e) : e; //fixes crashes in NWjs, when read `e.data`
-			var messageEvent = new MessageEvent(event);
-
-			if ('key' in messageEvent && 'sourceChannel' in messageEvent && transport.name === messageEvent.sourceChannel //events on the same channel
-			&& transport.key !== messageEvent.key //skip returned back events
-			) {
-					handler(messageEvent);
-				}
-		}
-
-		getNWWindowThen(function () {
-			var port = transport.port;
-			port.removeEventListener(Transport.EVENT_TYPE, transport.listener);
-			port.addEventListener(Transport.EVENT_TYPE, listener);
-			transport.listener = listener;
-		});
-	};
-
-	Transport.prototype.close = function () {
-		var transport = this;
-		getNWWindowThen(function (nwWindow) {
-			transport.port.removeEventListener(Transport.EVENT_TYPE, transport.listener);
-			transport.listener = null;
-			nwWindow.removeListener('loaded', transport.nwLoadedListener);
-		});
-	};
-
 	module.exports = Transport;
 	return module.exports;
 });
 $__System.registerDynamic('20', ['21'], true, function ($__require, exports, module) {
-  'use strict';
+	'use strict';
 
-  var define,
-      global = this || self,
-      GLOBAL = global;
-  var noop = $__require('21');
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var noop = $__require('21');
 
-  function Transport() {}
+	function Transport() {}
 
-  Transport.prototype.send = noop;
-  Transport.prototype.onMessageEvent = noop;
-  Transport.prototype.close = noop;
+	Transport.prototype = {
+		constructor: Transport,
+		send: noop,
+		onMessageEvent: noop,
+		close: noop
+	};
 
-  module.exports = Transport;
-  return module.exports;
+	module.exports = Transport;
+	return module.exports;
 });
 $__System.registerDynamic('22', ['18', '19', '1a', '1c', '21'], true, function ($__require, exports, module) {
 	'use strict';
@@ -1059,54 +937,53 @@ $__System.registerDynamic('22', ['18', '19', '1a', '1c', '21'], true, function (
 
 	Transport.supported = Boolean(detection);
 
-	Transport.prototype.send = function (data) {
-		var message = new Message(data, this);
-		var transport = this;
+	Transport.prototype = {
+		constructor: Transport,
 
-		this.port.sendMessage(message);
-		if (this.tabs) {
-			this.tabs.query({}, function (tabs) {
-				var i = -1;
-				while (++i in tabs) {
-					transport.tabs.sendMessage(tabs[i].id, message, function () {
-						var err = runtime.lastError;
-					});
-				}
-			});
+		send: function (data) {
+			var message = new Message(data, this);
+			var transport = this;
+			this.port.sendMessage(message);
+			if (this.tabs) {
+				this.tabs.query({}, function (tabs) {
+					var i = -1;
+					while (++i in tabs) {
+						transport.tabs.sendMessage(tabs[i].id, message, function () {
+							var err = runtime.lastError;
+						});
+					}
+				});
+			}
+			//this.port.sendMessage(extensionId, message)
+		},
+
+		onMessageEvent: function (handler) {
+			var transport = this;
+			//	Fired when a message is sent from another extension/app (by runtime.sendMessage). Cannot be used in a content script. 
+			// chrome.runtime.onMessageExternal.addListener(function (request, sender, sendResponse){})
+			function listener(message, sender) {
+				var messageEvent = new MessageEvent({
+					data: message,
+					origin: sender.tab ? sender.tab.url : sender.url
+				});
+				if ('sourceChannel' in messageEvent && 'key' in messageEvent && transport.name === messageEvent.sourceChannel //events on the same channel
+				&& transport.key !== messageEvent.key //skip returned back events
+				) {
+						handler(messageEvent);
+					}
+			}
+			this.port.onMessage.removeListener(this.listener);
+			//this.port.onMessageExternal.removeListener(this.listener)
+			this.port.onMessage.addListener(listener);
+			//this.port.onMessageExternal.addListener(listener)
+			this.listener = listener;
+		},
+
+		close: function () {
+			this.port.onMessage.removeListener(this.listener);
+			//this.port.onMessageExternal.removeListener(this.listener)
+			this.listener = noop;
 		}
-		//this.port.sendMessage(extensionId, message)
-	};
-
-	Transport.prototype.onMessageEvent = function (handler) {
-		var transport = this;
-
-		//	Fired when a message is sent from another extension/app (by runtime.sendMessage). Cannot be used in a content script. 
-		// chrome.runtime.onMessageExternal.addListener(function (request, sender, sendResponse){})
-
-		function listener(message, sender) {
-			var messageEvent = new MessageEvent({
-				data: message,
-				origin: sender.tab ? sender.tab.url : sender.url
-			});
-
-			if ('sourceChannel' in messageEvent && 'key' in messageEvent && transport.name === messageEvent.sourceChannel //events on the same channel
-			&& transport.key !== messageEvent.key //skip returned back events
-			) {
-					handler(messageEvent);
-				}
-		}
-
-		this.port.onMessage.removeListener(this.listener);
-		//this.port.onMessageExternal.removeListener(this.listener)
-		this.port.onMessage.addListener(listener);
-		//this.port.onMessageExternal.addListener(listener)
-		this.listener = listener;
-	};
-
-	Transport.prototype.close = function () {
-		this.port.onMessage.removeListener(this.listener);
-		//this.port.onMessageExternal.removeListener(this.listener)
-		this.listener = noop;
 	};
 
 	module.exports = Transport;
@@ -1131,20 +1008,24 @@ $__System.registerDynamic('23', ['18', '19', '1c'], true, function ($__require, 
 	Transport.supported = Boolean(global.BroadcastChannel);
 	Transport.EVENT_TYPE = 'message';
 
-	Transport.prototype.send = function (data) {
-		var message = new Message(data);
-		this.port.postMessage(message);
-	};
+	Transport.prototype = {
+		constructor: Transport,
 
-	Transport.prototype.onMessageEvent = function (handler) {
-		this.port.addEventListener(Transport.EVENT_TYPE, function (event) {
-			var messageEvent = new MessageEvent(event);
-			handler(messageEvent);
-		});
-	};
+		send: function (data) {
+			var message = new Message(data);
+			this.port.postMessage(message);
+		},
 
-	Transport.prototype.close = function () {
-		this.port.close();
+		onMessageEvent: function (handler) {
+			this.port.addEventListener(Transport.EVENT_TYPE, function (event) {
+				var messageEvent = new MessageEvent(event);
+				handler(messageEvent);
+			});
+		},
+
+		close: function () {
+			this.port.close();
+		}
 	};
 
 	module.exports = Transport;
@@ -1294,8 +1175,149 @@ $__System.registerDynamic('1d', ['1c'], true, function ($__require, exports, mod
 	};
 	return module.exports;
 });
-$__System.registerDynamic('25', ['18', '19', '1a', '1c', '1d'], true, function ($__require, exports, module) {
+$__System.registerDynamic('1b', ['1c'], true, function ($__require, exports, module) {
 	'use strict';
+
+	var define,
+	    global = this || self,
+	    GLOBAL = global;
+	var environment = $__require('1c');
+
+	module.exports = {
+		isSameOrigin: function (win, currentWin) {
+			try {
+				if (win.location.origin) {
+					if (environment.is.nw) {
+						return true; //workaround for NWJS app when external origin have full privileges
+					} else {
+						return win.location.origin === currentWin.location.origin;
+					}
+				} else {
+					return win.location.host === currentWin.location.host && win.location.protocol === currentWin.location.protocol;
+				}
+			} catch (err) {
+				return false;
+			}
+		},
+
+		getCrossOriginChildren: function getCrossOriginChildren(topWin) {
+			var crossOriginFrames = [];
+			var frames = topWin.frames;
+			var currentWin = environment.global.window;
+			var win;
+			var i = frames.length;
+			var isSameOrigin = module.exports.isSameOrigin;
+
+			while (i--) {
+				win = frames[i];
+				if (!isSameOrigin(win, currentWin)) {
+					crossOriginFrames.push(win);
+				}
+				//include deeper level frames
+				crossOriginFrames = crossOriginFrames.concat(getCrossOriginChildren(win));
+			}
+
+			return crossOriginFrames;
+		},
+
+		getSameOriginChildren: function getSameOriginChildren(topWin) {
+			var sameOriginFrames = [];
+			var frames = topWin.frames;
+			var currentWin = environment.global.window;
+			var win;
+			var i = frames.length;
+			var isSameOrigin = module.exports.isSameOrigin;
+
+			while (i--) {
+				win = frames[i];
+				if (isSameOrigin(win, currentWin)) {
+					sameOriginFrames.push(win);
+				}
+				//include deeper level frames
+				sameOriginFrames = sameOriginFrames.concat(getSameOriginChildren(win));
+			}
+
+			return sameOriginFrames;
+		},
+
+		/**
+   * Returns a collection of all child frames/iframes windows objects. Takes into a count deeper nested frames.
+   * @param [Window] topWin - Main document window, where to search child frames
+   * @returns [Array] - Array of all child windows.
+   */
+		getAllChildren: function getAllChildren(topWin) {
+			var childFrames = [];
+			var frames = topWin.frames;
+			var win;
+			var i = frames.length;
+
+			while (i--) {
+				win = frames[i];
+				childFrames.push(win);
+				//include deeper level frames
+				childFrames = childFrames.concat(getAllChildren(win));
+			}
+
+			return childFrames;
+		},
+
+		/**
+   * Returns a collection of cross origin frames/iframes windows objects. Takes into a count deeper nested frames.
+   * @param [Window] topWin - Main document window, where to search child frames
+   * @returns [Array] - Array of same origin windows.
+   */
+		getSameOrigin: function (topWin) {
+			var getSameOriginChildren = module.exports.getSameOriginChildren;
+			var isSameOrigin = module.exports.isSameOrigin;
+			var windows = getSameOriginChildren(topWin);
+			var currentWin = environment.global.window;
+			if (isSameOrigin(topWin, currentWin)) {
+				windows.push(topWin);
+			}
+			return windows;
+		},
+
+		/**
+   * Returns a collection of cross origin frames/iframes windows objects. Takes into a count deeper nested frames.
+   * @param [Window] topWin - Main document window, where to search child frames
+   * @returns [Array] - Array of cross origin child windows.
+   */
+		getCrossOrigin: function (topWin) {
+			var getCrossOriginChildren = module.exports.getCrossOriginChildren;
+			var isSameOrigin = module.exports.isSameOrigin;
+			var windows = getCrossOriginChildren(topWin);
+			var currentWin = environment.global.window;
+			if (!isSameOrigin(topWin, currentWin)) {
+				windows.push(topWin);
+			}
+			return windows;
+		},
+
+		getAll: function (topWin) {
+			if (!topWin) {
+				return [];
+			}
+			var children = module.exports.getAllChildren(topWin);
+			var windows = [topWin].concat(children);
+			return windows;
+		}
+	};
+	return module.exports;
+});
+$__System.registerDynamic('25', ['18', '19', '1a', '1c', '1d', '1b'], true, function ($__require, exports, module) {
+	'use strict';
+
+	/* Known possible issues:
+ 1. IE dispathes events on a `document`. if ('v'=='\v') 
+ 2. Firefox dispatches event on `body`
+ 3. IE 8 doesn't have `key` and `newValue` properties in an event. if (document.documentMode < 9)
+ 4. In iOS event is not fired between tabs
+ 5. IE 10-11 dispatches event before storage modification and `newValue` is not new but old
+ 6. IE 10-11 doesn't dispatch event in frames of the second tab
+ 
+ Links:
+ * http://blogs.msdn.com/b/ieinternals/archive/2009/09/16/bugs-in-ie8-support-for-html5-postmessage-sessionstorage-and-localstorage.aspx
+ */
 
 	var define,
 	    global = this || self,
@@ -1305,8 +1327,12 @@ $__System.registerDynamic('25', ['18', '19', '1a', '1c', '1d'], true, function (
 	var generateRandomKey = $__require('1a');
 	var environment = $__require('1c');
 	var locationOrigin = $__require('1d').origin;
+	var getOriginWindows = $__require('1b').getSameOrigin;
 
+	var global = environment.global;
 	var window = environment.window;
+	var navigator = window.navigator;
+	var document = window.document;
 	var storageSupported = function () {
 		try {
 			return 'localStorage' in global && global.localStorage !== null;
@@ -1316,6 +1342,7 @@ $__System.registerDynamic('25', ['18', '19', '1a', '1c', '1d'], true, function (
 	}();
 	var URL = typeof window.URL === 'function' && window.URL;
 	var StorageEvent = window.StorageEvent || {};
+	var edgeBrowser = navigator && 'msSaveBlob' in navigator && document && !('documentMode' in document); // && 'StyleMedia' in window
 
 	//IE and Edge fix, Opera <=12 fix
 	if (storageSupported && (typeof StorageEvent === 'object' || StorageEvent.length === 0)) {
@@ -1333,21 +1360,6 @@ $__System.registerDynamic('25', ['18', '19', '1a', '1c', '1d'], true, function (
 		StorageEvent.prototype = window.Event.prototype;
 	}
 
-	/* Known possible issues:
- 1. IE dispathes events on a `document`. if ('v'=='\v') 
- 2. Firefox dispatches event on `body`
- 3. IE 8 doesn't have `key` and `newValue` properties in an event. if (document.documentMode < 9)
- 4. In iOS event is not fired between tabs
- 5. Edge doesn't dispatch event in frames of the current window
- 6. IE 10-11 dispatches event before storage modification and `newValue` is not new but old
- 7. IE 10-11 doesn't dispatch event in frames of the second tab
- 
- Links:
- * http://blogs.msdn.com/b/ieinternals/archive/2009/09/16/bugs-in-ie8-support-for-html5-postmessage-sessionstorage-and-localstorage.aspx
- 
- A good case https://github.com/nodeca/tabex
- */
-
 	function Transport(name) {
 		this.port1 = global.localStorage; // sessionStorage || globalStorage
 		this.port2 = window; //document || body
@@ -1362,13 +1374,18 @@ $__System.registerDynamic('25', ['18', '19', '1a', '1c', '1d'], true, function (
 	Transport.EVENT_TYPE = 'storage';
 
 	Transport.prototype = {
+		constructor: Transport,
+
 		send: function (data) {
 			var message = new Message(data, this);
-			message.changeTrigger = generateRandomKey();
 			var port1 = this.port1;
 			var port2 = this.port2;
-			var messageJSON = message.asJSON();
+			var messageJSON;
+			var windows;
+			var index;
 
+			message.changeTrigger = generateRandomKey();
+			messageJSON = message.asJSON();
 			setTimeout(function () {
 				var storageEvent = new StorageEvent(Transport.EVENT_TYPE, { newValue: messageJSON });
 				try {
@@ -1376,7 +1393,17 @@ $__System.registerDynamic('25', ['18', '19', '1a', '1c', '1d'], true, function (
 				} catch (err) {
 					console.error(err);
 				}
-				port2.dispatchEvent(storageEvent);
+
+				if (edgeBrowser) {
+					// fix: Edge doesn't dispatch event in frames of the current window
+					windows = getOriginWindows(port2.top);
+					index = -1;
+					while (++index in windows) {
+						windows[index].dispatchEvent(storageEvent);
+					}
+				} else {
+					port2.dispatchEvent(storageEvent);
+				}
 			}, 0);
 		},
 
@@ -1388,14 +1415,13 @@ $__System.registerDynamic('25', ['18', '19', '1a', '1c', '1d'], true, function (
 				event.origin = URL && event.url && new URL(event.url).origin || locationOrigin; //fix for some specific issues when 'storage' event is dispached across origins
 				var messageEvent = new MessageEvent(event);
 
-				if ('key' in messageEvent && 'sourceChannel' in messageEvent && transport.name === messageEvent.sourceChannel //events on the same channel
-				&& transport.key !== messageEvent.key //skip returned back events
+				if ('key' in messageEvent && 'sourceChannel' in messageEvent && transport.name === messageEvent.sourceChannel // events on the same channel
+				&& transport.key !== messageEvent.key // skip returned back events
 				&& transport.latestEventData !== event.data && event.origin === locationOrigin) {
-					transport.latestEventData = event.data; //fix previous IE double event handling
+					transport.latestEventData = event.data; // fix: previous IE handles event twice
 					handler(messageEvent);
 				}
 			}
-
 			port2.removeEventListener(Transport.EVENT_TYPE, this.listener);
 			port2.addEventListener(Transport.EVENT_TYPE, listener);
 			this.listener = listener;
@@ -1520,17 +1546,18 @@ $__System.registerDynamic('1c', [], true, function ($__require, exports, module)
 		// 	}
 		// }())
 
-		//export
-		exports.window = window;
-		exports.global = global;
-		exports.location = location;
-		exports.is = {
-			node: isNode,
-			nw: isNW,
-			nodeWebkit: isNodeWebkit
-			//extension: isExtension
+		module.exports = {
+			window: window,
+			global: global,
+			location: location,
+			is: {
+				node: isNode,
+				nw: isNW,
+				nodeWebkit: isNodeWebkit
+				//extension: isExtension
+			},
+			undefined: undefined
 		};
-		exports.undefined = undefined;
 	}(this, typeof global !== 'undefined' ? global : null, typeof window !== 'undefined' ? window : null);
 	return module.exports;
 });
@@ -1567,47 +1594,60 @@ $__System.registerDynamic('28', ['16', '27', '1c'], true, function ($__require, 
 		});
 	}
 
-	CrossChannel.prototype.on = CrossChannel.prototype.addEventListener = function (type, handler) {
-		this.messageHandlers.push(handler);
-	};
+	CrossChannel.prototype = {
+		constructor: CrossChannel,
 
-	CrossChannel.prototype.removeEventListener = function (type, handler) {
-		this.messageHandlers.remove(handler);
-	};
+		addEventListener: function (type, handler) {
+			if (type === 'message') {
+				this.messageHandlers.push(handler);
+			}
+		},
 
-	CrossChannel.prototype.removeAllListeners = function () {
-		this.messageHandlers.empty();
-	};
+		removeEventListener: function (type, handler) {
+			if (type === 'message') {
+				this.messageHandlers.remove(handler);
+			}
+		},
 
-	CrossChannel.prototype.once = function (type, handler) {
-		var crosschannel = this;
-		function removeHandler() {
-			crosschannel.messageHandlers.remove(handler);
-			crosschannel.messageHandlers.remove(removeHandler);
+		removeAllListeners: function () {
+			this.messageHandlers.empty();
+		},
+
+		once: function (type, handler) {
+			var crosschannel = this;
+			function removeHandler() {
+				crosschannel.messageHandlers.remove(handler);
+				crosschannel.messageHandlers.remove(removeHandler);
+			}
+			if (type === 'message') {
+				crosschannel.messageHandlers.push(handler);
+				crosschannel.messageHandlers.push(removeHandler);
+			}
+		},
+
+		postMessage: function (message) {
+			if (!arguments.length) {
+				throw new TypeError('Failed to execute \'postMessage\' on \'CrossChannel\': 1 argument required, but only 0 present.');
+			}
+			if (this.closed) {
+				return;
+			}
+			this.channel.send(message);
+		},
+
+		close: function () {
+			this.channel.close();
+			this.messageHandlers.empty();
+			this.closed = true;
+		},
+
+		valueOf: function () {
+			return '[object CrossChannel]';
 		}
-		this.messageHandlers.push(handler);
-		this.messageHandlers.push(removeHandler);
 	};
 
-	CrossChannel.prototype.postMessage = function (message) {
-		if (!arguments.length) {
-			throw new TypeError('Failed to execute \'postMessage\' on \'CrossChannel\': 1 argument required, but only 0 present.');
-		}
-		if (this.closed) {
-			return;
-		}
-		this.channel.send(message);
-	};
-
-	CrossChannel.prototype.close = function () {
-		this.channel.close();
-		this.messageHandlers.empty();
-		this.closed = true;
-	};
-
-	CrossChannel.prototype.valueOf = function () {
-		return '[object CrossChannel]';
-	};
+	//shortcut
+	CrossChannel.prototype.on = CrossChannel.prototype.addEventListener;
 
 	module.exports = CrossChannel;
 	window.CrossChannel = CrossChannel;
@@ -2240,7 +2280,7 @@ $__System.registerDynamic('1', ['2b', '30', '31'], true, function ($__require, e
 
 	var GLOBAL_NAME = 'connexion';
 
-	exports.version = '0.6.1';
+	exports.version = '0.7.1';
 
 	exports.listen = function (type, handler) {
 		emitter.listen(type, handler);
